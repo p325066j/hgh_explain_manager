@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { categoryCreateSchema } from "@/lib/validators";
 
@@ -21,6 +22,12 @@ export async function POST(req: NextRequest) {
 
   const data = parsed.data;
   const created = await prisma.category.create({ data });
+  await logAudit({
+    action: "CREATE",
+    entityType: "CATEGORY",
+    entityId: created.id,
+    message: "API からカテゴリを追加しました。",
+    meta: { name: created.name, slug: created.slug, order: created.order },
+  });
   return NextResponse.json(created, { status: 201 });
 }
-

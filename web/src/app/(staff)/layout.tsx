@@ -1,11 +1,16 @@
-﻿import Link from "next/link";
+import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 const navigation = [
   { label: "ダッシュボード", href: "/staff" },
   { label: "動画一覧", href: "/staff/videos" },
   { label: "動画登録", href: "/staff/videos/new" },
+  { label: "動画アップロード", href: "/staff/videos/upload" },
   { label: "カテゴリ管理", href: "/staff/categories" },
+  { label: "監査ログ", href: "/staff/audit-logs" },
+  { label: "YouTube設定", href: "/staff/settings/youtube" },
 ];
 
 type Props = {
@@ -13,6 +18,13 @@ type Props = {
 };
 
 export default function StaffLayout({ children }: Props) {
+  async function logout() {
+    "use server";
+    const store = await cookies();
+    store.delete("staff_auth");
+    redirect("/staff/login");
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-10">
@@ -24,17 +36,27 @@ export default function StaffLayout({ children }: Props) {
               動画ライブラリの更新、レビュー、カテゴリ編成をここから行います。
             </p>
           </div>
-          <nav aria-label="スタッフナビゲーション" className="flex flex-wrap gap-2">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-full border border-slate-700/80 px-4 py-2 text-sm text-slate-200 transition hover:border-sky-400/60 hover:text-white"
+          <div className="flex flex-wrap items-center gap-3">
+            <nav aria-label="スタッフナビゲーション" className="flex flex-wrap gap-2">
+              {navigation.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-full border border-slate-700/80 px-4 py-2 text-sm text-slate-200 transition hover:border-sky-400/60 hover:text-white"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            <form action={logout}>
+              <button
+                type="submit"
+                className="rounded-full border border-rose-400/50 px-4 py-2 text-sm text-rose-100 transition hover:border-rose-300 hover:text-white"
               >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+                ログアウト
+              </button>
+            </form>
+          </div>
         </header>
 
         <main className="grid gap-8 pb-16">{children}</main>

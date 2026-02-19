@@ -1,4 +1,4 @@
-import { PrismaClient, type Prisma } from "@prisma/client";
+﻿import { PrismaClient } from "@prisma/client";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { getCategories, getVideos } from "../src/lib/mock-data";
@@ -37,19 +37,9 @@ const prisma = new PrismaClient();
 
 const normalizeDate = (value: string) => new Date(value);
 
-const toPrismaVisibility = (value: string): Prisma.VideoVisibility => {
-  switch (value.toUpperCase()) {
-    case "PUBLISHED":
-      return "PUBLISHED";
-    case "IN_REVIEW":
-      return "IN_REVIEW";
-    default:
-      return "DRAFT";
-  }
-};
-
 async function main() {
   console.log("[seed] delete existing data...");
+  await prisma.videoCategory.deleteMany();
   await prisma.video.deleteMany();
   await prisma.category.deleteMany();
 
@@ -75,15 +65,29 @@ async function main() {
       id: video.id,
       title: video.title,
       description: video.description,
-      categoryId: video.categoryId,
       procedures: video.procedures.join(", "),
       duration: video.duration,
       fileUrl: video.fileUrl,
       thumbnailUrl: video.thumbnailUrl,
-      visibility: toPrismaVisibility(video.visibility),
+      isVisible: video.isVisible,
+      isArchived: video.isArchived,
+      isVisibilityDirty: false,
+      visibilitySyncStatus: "SUCCESS",
+      visibilitySyncedAt: normalizeDate(video.updatedAt),
+      visibilitySyncError: null,
       createdAt: normalizeDate(video.createdAt),
       updatedAt: normalizeDate(video.updatedAt),
     })),
+  });
+
+  await prisma.videoCategory.createMany({
+    data: videos.flatMap((video) =>
+      video.categoryIds.map((categoryId) => ({
+        videoId: video.id,
+        categoryId,
+        order: 0,
+      })),
+    ),
   });
 
   const [categoryCount, videoCount] = await Promise.all([

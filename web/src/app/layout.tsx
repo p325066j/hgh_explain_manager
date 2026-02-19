@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -13,25 +13,45 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "HGH Explain Manager",
   metadataBase: new URL("https://hgh-explain.example"),
   title: {
     default: "HGH Explain Manager",
     template: "%s | HGH Explain Manager",
   },
   description:
-    "医療機関向け検査・治療説明動画を一元管理し、スタッフと患者双方の体験を高める院内SaaSプラットフォームです。",
-  keywords: ["医療向けSaaS", "動画説明", "業務効率化", "患者体験", "HGH Explain Manager"],
+    "医療機関向けの検査・治療説明動画を管理し、スタッフ運用と患者視聴を支援するSaaSプラットフォーム。",
+  keywords: [
+    "医療動画",
+    "患者説明",
+    "検査説明",
+    "治療説明",
+    "HGH Explain Manager",
+  ],
   openGraph: {
     title: "HGH Explain Manager",
-    description: "検査・治療説明動画のライブラリ管理とカテゴリ編成、患者向け配信をワンストップで提供します。",
+    description:
+      "検査・治療説明動画の管理とカテゴリ整理を支援する医療機関向けSaaS。",
     type: "website",
     locale: "ja_JP",
   },
   twitter: {
     card: "summary_large_image",
     title: "HGH Explain Manager",
-    description: "医療スタッフの説明業務を動画で標準化する院内SaaSプラットフォームです。",
+    description:
+      "検査・治療説明動画の運用を支援する医療機関向けSaaSプラットフォーム。",
   },
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({

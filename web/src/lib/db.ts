@@ -17,8 +17,6 @@ ensureAbsoluteDatabaseUrl();
 // Next.js の開発時ホットリロード対策で PrismaClient をシングルトンに保持
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({ log: ["warn", "error"] });
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ log: ["warn", "error"] });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

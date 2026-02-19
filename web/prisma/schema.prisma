@@ -1,6 +1,5 @@
 // Prisma schema defining the domain models for HGH Explain Manager.
-// SQLiteを利用し、動画とカテゴリの管理を行います。
-
+// SQLite を利用し、動画メタ情報とカテゴリ構造を管理する。
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,37 +9,83 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum VideoVisibility {
-  DRAFT
-  IN_REVIEW
-  PUBLISHED
+enum VisibilitySyncStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+enum AuditEntityType {
+  VIDEO
+  CATEGORY
+  VISIBILITY_SYNC
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  SYNC
 }
 
 model Category {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  order     Int      @default(0)
-  videos    Video[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String          @id @default(cuid())
+  name            String
+  slug            String          @unique
+  order           Int             @default(0)
+  videoCategories VideoCategory[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }
 
 model Video {
-  id           String          @id @default(cuid())
-  title        String
-  description  String
-  categoryId   String
-  category     Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  // SQLiteの簡易対応としてカンマ区切りの文字列で保持（将来は正規化）
-  procedures   String?
-  duration     Int?
-  fileUrl      String
-  thumbnailUrl String?
-  visibility   VideoVisibility @default(DRAFT)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  /// YouTube の videoId を主キーとして利用する
+  id                   String               @id
+  title                String
+  description          String
+  procedures           String?
+  duration             Int?
+  fileUrl              String
+  thumbnailUrl         String?
+  isVisible            Boolean              @default(false)
+  isArchived           Boolean              @default(false)
+  isVisibilityDirty    Boolean              @default(false)
+  visibilitySyncStatus VisibilitySyncStatus @default(PENDING)
+  visibilitySyncedAt   DateTime?
+  visibilitySyncError  String?
+  videoCategories      VideoCategory[]
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
 
+  @@index([isVisible])
+  @@index([isArchived])
+  @@index([isVisibilityDirty])
+}
+
+model VideoCategory {
+  videoId    String
+  categoryId String
+  order      Int      @default(0)
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, categoryId])
   @@index([categoryId])
-  @@index([visibility])
+  @@index([videoId])
+  @@index([categoryId, order])
+}
+
+model AuditLog {
+  id         String          @id @default(cuid())
+  action     AuditAction
+  entityType AuditEntityType
+  entityId   String
+  message    String?
+  meta       Json?
+  createdAt  DateTime        @default(now())
+
+  @@index([entityType])
+  @@index([entityId])
+  @@index([createdAt])
 }

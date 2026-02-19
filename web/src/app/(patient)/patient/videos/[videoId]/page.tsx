@@ -1,69 +1,123 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCategories, getVideoById } from "@/lib/mock-data";
+import { prisma } from "@/lib/db";
 
 type Props = {
-    params: {
-        videoId: string;
-    };
+  params: Promise<{
+    videoId: string;
+  }>;
 };
 
-export default function PatientVideoDetailPage({ params }: Props) {
-    const video = getVideoById(params.videoId);
+export default async function PatientVideoDetailPage({ params }: Props) {
+  const { videoId } = await params;
+  const video = await prisma.video.findFirst({
+    where: { id: videoId, isVisible: true, isArchived: false },
+    include: {
+      videoCategories: { include: { category: true }, orderBy: { order: "asc" } },
+    },
+  });
 
-    if (!video) {
-        notFound();
+  if (!video) {
+    notFound();
+  }
+
+  const procedures = video.procedures
+    ? video.procedures
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
+  const getYouTubeEmbedUrl = (url: string) => {
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname === "youtu.be") {
+        const id = parsed.pathname.slice(1);
+        return id ? `https://www.youtube.com/embed/${id}` : null;
+      }
+      if (parsed.hostname.endsWith("youtube.com")) {
+        if (parsed.pathname === "/watch") {
+          const id = parsed.searchParams.get("v");
+          return id ? `https://www.youtube.com/embed/${id}` : null;
+        }
+        if (parsed.pathname.startsWith("/embed/")) {
+          const id = parsed.pathname.split("/")[2];
+          return id ? `https://www.youtube.com/embed/${id}` : null;
+        }
+      }
+      return null;
+    } catch {
+      return null;
     }
+  };
 
-    const categories = getCategories();
-    const category = categories.find((item) => item.id === video.categoryId);
+  const embedUrl = getYouTubeEmbedUrl(video.fileUrl);
+  const categoryNames = video.videoCategories.map((item) => item.category.name).join(", ");
 
-    return (
-        <div className="grid gap-6">
-            <Link
-                href="/patient"
-                className="inline-flex items-center gap-2 text-sm text-sky-200 underline underline-offset-4"
+  return (
+    <div className="grid gap-6">
+      <Link
+        href="/patient"
+        className="inline-flex items-center gap-2 text-sm text-sky-200 underline underline-offset-4"
+      >
+        カテゴリ一覧に戻る
+      </Link>
+
+      <section className="grid gap-4 rounded-3xl border border-slate-800/70 bg-slate-900/60 p-6">
+        <header className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.3em] text-sky-300">
+            {categoryNames || "カテゴリ未設定"}
+          </p>
+          <h1 className="text-2xl font-semibold text-white">{video.title}</h1>
+          <p className="text-sm text-slate-300">{video.description}</p>
+        </header>
+
+        <div className="aspect-video w-full overflow-hidden rounded-2xl border border-slate-800/80 bg-black">
+          {embedUrl ? (
+            <iframe
+              title={video.title}
+              src={embedUrl}
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <video
+              key={video.fileUrl}
+              controls
+              className="h-full w-full"
+              poster={video.thumbnailUrl || undefined}
             >
-                ← カテゴリ一覧に戻る
-            </Link>
-
-            <section className="grid gap-4 rounded-3xl border border-slate-800/70 bg-slate-900/60 p-6">
-                <header className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.3em] text-sky-300">{category?.name ?? "カテゴリ未設定"}</p>
-                    <h1 className="text-2xl font-semibold text-white">{video.title}</h1>
-                    <p className="text-sm text-slate-300">{video.description}</p>
-                </header>
-
-                <div className="aspect-video w-full overflow-hidden rounded-2xl border border-slate-800/80 bg-black">
-                    <video
-                        key={video.fileUrl}
-                        controls
-                        className="h-full w-full"
-                        poster={video.thumbnailUrl || undefined}
-                    >
-                        <source src={video.fileUrl} type="video/mp4" />
-                        お使いの端末では動画を再生できません。
-                    </video>
-                </div>
-
-                <div className="grid gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4">
-                    <p className="text-sm text-slate-200">想定される検査・処置</p>
-                    <ul className="list-disc space-y-1 pl-6 text-sm text-slate-300">
-                        {video.procedures.map((item) => (
-                            <li key={item}>{item}</li>
-                        ))}
-                    </ul>
-                </div>
-
-                <footer className="flex flex-col gap-1 text-xs text-slate-400">
-                    <span>
-                        更新日: {new Date(video.updatedAt).toLocaleString("ja-JP", { dateStyle: "medium", timeStyle: "short" })}
-                    </span>
-                    <span>
-                        公開状態: {video.visibility === "published" ? "公開中" : video.visibility === "in_review" ? "レビュー待ち" : "ドラフト"}
-                    </span>
-                </footer>
-            </section>
+              <source src={video.fileUrl} type="video/mp4" />
+              この動画はブラウザで再生できません。
+            </video>
+          )}
         </div>
-    );
+
+        <div className="grid gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4">
+          <p className="text-sm text-slate-200">関連する検査・治療</p>
+          {procedures.length === 0 ? (
+            <p className="text-sm text-slate-400">登録されていません。</p>
+          ) : (
+            <ul className="list-disc space-y-1 pl-6 text-sm text-slate-300">
+              {procedures.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <footer className="flex flex-col gap-1 text-xs text-slate-400">
+          <span>
+            更新日時:{" "}
+            {new Date(video.updatedAt).toLocaleString("ja-JP", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </span>
+          <span>公開範囲: 公開</span>
+        </footer>
+      </section>
+    </div>
+  );
 }

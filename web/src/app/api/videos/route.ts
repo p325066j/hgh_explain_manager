@@ -1,63 +1,100 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { videoVisibilityEnum } from "@/lib/validators";
+import { logAudit } from "@/lib/audit";
+import { videoCreateSchema } from "@/lib/validators";
+
+const extractYouTubeId = (url: string) => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "youtu.be") {
+      return parsed.pathname.slice(1) || null;
+    }
+    if (parsed.hostname.endsWith("youtube.com")) {
+      if (parsed.pathname === "/watch") {
+        return parsed.searchParams.get("v");
+      }
+      if (parsed.pathname.startsWith("/embed/")) {
+        return parsed.pathname.split("/")[2] || null;
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const categoryId = searchParams.get("categoryId") ?? undefined;
   const q = searchParams.get("q")?.trim() ?? undefined;
-  const visibility = searchParams.get("visibility")?.toUpperCase();
+  const isVisibleParam = searchParams.get("isVisible");
+  const isVisible =
+    isVisibleParam === "true" ? true : isVisibleParam === "false" ? false : undefined;
 
-  const where: any = {};
-  if (categoryId) where.categoryId = categoryId;
-  if (visibility && videoVisibilityEnum.safeParse(visibility).success)
-    where.visibility = visibility as any;
-  if (q) where.title = { contains: q };
+  const where: Prisma.VideoWhereInput = {};
+  if (typeof isVisible === "boolean") where.isVisible = isVisible;
+  if (categoryId) {
+    where.videoCategories = { some: { categoryId } };
+  }
+  if (q) {
+    where.OR = [{ title: { contains: q } }, { description: { contains: q } }];
+  }
 
   const videos = await prisma.video.findMany({
     where,
+    include: {
+      videoCategories: { include: { category: true }, orderBy: { order: "asc" } },
+    },
     orderBy: { updatedAt: "desc" },
   });
   return NextResponse.json(videos);
 }
 
 export async function POST(req: NextRequest) {
-  // このエンドポイントは将来的に multipart 対応予定。MVPではJSON想定。
   const json = await req.json().catch(() => ({}));
-  const title = String(json.title ?? "");
-  const description = String(json.description ?? "");
-  const categoryId = String(json.categoryId ?? "");
-  const procedures: string[] = Array.isArray(json.procedures)
-    ? json.procedures.map((v: unknown) => String(v))
-    : typeof json.procedures === "string"
-      ? String(json.procedures)
-          .split(",")
-          .map((v: string) => v.trim())
-          .filter(Boolean)
-      : [];
-  const duration = json.duration != null ? Number(json.duration) : null;
-  const visibility = String(json.visibility ?? "DRAFT").toUpperCase();
-  const fileUrl = String(json.fileUrl ?? "/videos/placeholder.mp4");
-  const thumbnailUrl = json.thumbnailUrl ? String(json.thumbnailUrl) : null;
-
-  if (!title || !categoryId) {
-    return NextResponse.json({ message: "title, categoryIdは必須" }, { status: 400 });
+  const parsed = videoCreateSchema.safeParse(json);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { message: "invalid payload", issues: parsed.error.flatten() },
+      { status: 400 },
+    );
   }
-  if (!videoVisibilityEnum.safeParse(visibility).success) {
-    return NextResponse.json({ message: "visibilityが不正" }, { status: 400 });
+
+  const data = parsed.data;
+  const videoId = extractYouTubeId(data.fileUrl);
+  if (!videoId) {
+    return NextResponse.json({ message: "invalid YouTube URL" }, { status: 400 });
   }
 
   const created = await prisma.video.create({
     data: {
-      title,
-      description,
-      categoryId,
-      procedures: procedures.join(", "),
-      duration: duration ?? undefined,
-      visibility: visibility as any,
-      fileUrl,
-      thumbnailUrl: thumbnailUrl ?? undefined,
+      id: videoId,
+      title: data.title,
+      description: data.description,
+      procedures: (data.procedures ?? []).join(", "),
+      duration: data.duration,
+      isVisible: data.isVisible,
+      isVisibilityDirty: true,
+      visibilitySyncStatus: "PENDING",
+      fileUrl: data.fileUrl,
+      thumbnailUrl: data.thumbnailUrl ?? undefined,
+      videoCategories: {
+        create: [{ categoryId: data.categoryId, order: 0 }],
+      },
+    },
+    include: {
+      videoCategories: { include: { category: true }, orderBy: { order: "asc" } },
     },
   });
+
+  await logAudit({
+    action: "CREATE",
+    entityType: "VIDEO",
+    entityId: created.id,
+    message: "API から動画を登録しました。",
+    meta: { isVisible: data.isVisible, categoryId: data.categoryId },
+  });
+
   return NextResponse.json(created, { status: 201 });
 }
