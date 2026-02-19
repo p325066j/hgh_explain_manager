@@ -22,6 +22,20 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Learn More
 
+## Database Setup (SQLite + Prisma)
+
+This project uses Prisma with SQLite. For the first run, initialize the database:
+
+```bash
+pnpm i
+pnpm setup:db
+pnpm dev
+```
+
+Notes:
+- Environment variables are stored in `.env.local`. The Prisma CLI in setup scripts loads it via `dotenv-cli`.
+- Default `DATABASE_URL` is `file:./prisma/dev.db` (see `.env.example`).
+
 To learn more about Next.js, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.

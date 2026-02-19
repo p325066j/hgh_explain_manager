@@ -1,0 +1,46 @@
+// Prisma schema defining the domain models for HGH Explain Manager.
+// SQLiteを利用し、動画とカテゴリの管理を行います。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum VideoVisibility {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  order     Int      @default(0)
+  videos    Video[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Video {
+  id           String          @id @default(cuid())
+  title        String
+  description  String
+  categoryId   String
+  category     Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  // SQLiteの簡易対応としてカンマ区切りの文字列で保持（将来は正規化）
+  procedures   String?
+  duration     Int?
+  fileUrl      String
+  thumbnailUrl String?
+  visibility   VideoVisibility @default(DRAFT)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@index([visibility])
+}
