@@ -1,9 +1,9 @@
-import { Prisma } from "@prisma/client";
+﻿import { Prisma } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { videoCreateSchema } from "@/lib/validators";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import VideoForm from "./video-form";
 
 const extractYouTubeId = (url: string) => {
@@ -54,8 +54,8 @@ async function createVideo(_: FormState, formData: FormData): Promise<FormState>
   if (!videoId) {
     return {
       ok: false,
-      message: "YouTube の動画 URL が正しくありません。",
-      fieldErrors: { fileUrl: ["YouTube の動画 URL を入力してください。"] },
+      message: "YouTube の動画URLが正しくありません。",
+      fieldErrors: { fileUrl: ["YouTube の動画URLを入力してください。"] },
       values: raw,
     };
   }
@@ -66,6 +66,8 @@ async function createVideo(_: FormState, formData: FormData): Promise<FormState>
         id: videoId,
         title: data.title,
         description: data.description,
+        complications: data.complications ?? null,
+        precautions: data.precautions ?? null,
         isVisible: data.isVisible,
         isVisibilityDirty: true,
         visibilitySyncStatus: "PENDING",
@@ -82,8 +84,8 @@ async function createVideo(_: FormState, formData: FormData): Promise<FormState>
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         ok: false,
-        message: "同じ動画が既に登録されています。別の URL を入力してください。",
-        fieldErrors: { fileUrl: ["同じ動画IDが既に登録されています。"] },
+        message: "この動画は既に登録されています。別のURLを入力してください。",
+        fieldErrors: { fileUrl: ["この動画IDは既に使われています。"] },
         values: raw,
       };
     }
@@ -94,7 +96,7 @@ async function createVideo(_: FormState, formData: FormData): Promise<FormState>
     action: "CREATE",
     entityType: "VIDEO",
     entityId: videoId,
-    message: "動画を登録しました。",
+    message: "動画を手動登録しました。",
     meta: { isVisible: data.isVisible, categoryId: data.categoryId },
   });
   revalidatePath("/staff");
@@ -108,9 +110,9 @@ export default async function StaffVideoNewPage() {
   return (
     <div className="grid gap-8 rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6">
       <header className="space-y-2">
-        <h1 className="text-xl font-semibold text-white">動画の新規登録</h1>
+        <h1 className="text-xl font-semibold text-white">動画の手動登録</h1>
         <p className="text-sm text-slate-300">
-          YouTube の URL とメタ情報を入力して、動画を登録します。
+          YouTube のURLとメタ情報を入力して、動画を登録します。
         </p>
       </header>
 

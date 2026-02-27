@@ -1,82 +1,56 @@
-# HGH Explain Manager - プロジェクト進捗（2026-02-19）
-
-最終更新: 2026-02-19
+﻿# HGH Explain Manager - プロジェクト進捗（2026-02-26）
+最終更新: 2026-02-26
 
 ## プロジェクト概要
-- **プロジェクト名**: 医療機関向け検査・治療説明動画管理 SaaS
-- **技術スタック**: Next.js (App Router / RSC), TypeScript, Tailwind CSS, Prisma, SQLite
-- **開発体制**: 1名（Cursor + Codex IDE）
-- **推奨環境**: Node 20.x, pnpm 9.x（.nvmrc あり）
-- **環境変数**: `.env.local` に `DATABASE_URL` / `STAFF_PASSCODE` / `YOUTUBE_*` などを設定
+- **目的**: 医療説明動画の管理・配信（スタッフ管理 / 患者閲覧）
+- **想定運用**: 患者はQRコード経由で `/patient` にアクセスし、個人スマホで閲覧
+- **技術**: Next.js (App Router / RSC), TypeScript, Tailwind CSS, Prisma, Postgres (Neon)
+- **認証**: スタッフは簡易パスコード
+- **動画保存**: YouTube（公開）
 
 ---
 
-## ロードマップ比較（MVP）
-### フェーズ 0: 基盤整備
+## フェーズ別進捗（MVP）
+### フェーズ0: 基盤
 - **状態**: 完了
-- **根拠**: `pnpm lint` / `pnpm typecheck` / `pnpm test:unit` / `pnpm test:e2e` すべて通過
+- **内容**: Node 20 / pnpm / lint / typecheck / test / E2E セットアップ
 
-### フェーズ 1: ドメイン / API
+### フェーズ1: ドメイン / API
 - **状態**: 完了
-- **根拠**:
-  - Prisma: `Video` / `Category` / `VideoCategory` / `AuditLog` を実装（`web/prisma/schema.prisma`）
-  - API: `GET/POST /api/videos`、`GET/POST/PATCH/DELETE /api/categories`、`GET /api/audit-logs`
+- **内容**: Prisma（Video / Category / VideoCategory / AuditLog）・API実装
 
-### フェーズ 2: スタッフ向け UI
-- **状態**: 主要機能完了
-- **根拠**:
-  - `/staff` ダッシュボード
-  - `/staff/videos` 一覧・公開/非公開切替・アップロード/URL登録導線
-  - `/staff/videos/new` URL 登録（重複時のエラー表示含む）
-  - `/staff/videos/upload` 動画アップロード
-  - `/staff/categories` 管理 + 並び替え + 入力バリデーション表示
-  - `/staff/settings/youtube` 一括反映
-  - `/staff/audit-logs` 監査ログ一覧
-
-### フェーズ 3: 患者向け UI
+### フェーズ2: スタッフUI
 - **状態**: 完了
-- **根拠**:
-  - `/patient` 一覧 + キーワード検索
-  - `/patient/videos/[videoId]` 再生
+- **内容**: 動画登録（URL / アップロード）、カテゴリ管理、YouTube設定、監査ログ
 
-### フェーズ 4: PWA & QA
-- **状態**: 完了（オフライン不要・プッシュ不要の前提で最小構成）
-- **根拠**:
-  - `manifest` 追加（`web/src/app/manifest.ts`）
-  - アイコン差し替え完了（`web/public/icons/icon-192.png`, `web/public/icons/icon-512.png`）
-  - maskable アイコン追加（`web/public/icons/icon-192-maskable.png`, `web/public/icons/icon-512-maskable.png`）
-  - `metadata` に manifest/icons、`viewport` に `themeColor` を設定（`web/src/app/layout.tsx`）
-  - QA: `pnpm lint` / `pnpm typecheck` / `pnpm test:unit` / `pnpm test:e2e` 通過
+### フェーズ3: 患者UI
+- **状態**: 完了
+- **内容**: カテゴリ選択、検索、動画詳細（合併症/注意事項の表示を追加）
+
+### フェーズ4: PWA & QA
+- **状態**: 完了
+- **内容**: PWA（manifest / icons / themeColor）と手動QA
 
 ---
 
-## 実装済み（機能）
-- **簡易パスコード認証**
-  - `/staff/login` + cookie 認証、`/staff` 配下はミドルウェアで保護
-- **YouTube 手動 URL 登録 + バリデーション**
-  - URL 形式/ID 抽出/説明必須（`web/src/lib/validators.ts`）
-- **YouTube 自動アップロード**
-  - `/staff/videos/upload` でアップロード
-  - YouTube Data API（`web/src/lib/youtube.ts`）
-- **公開/非公開の一括反映**
-  - `/staff/settings/youtube` で実行、反映状態を更新
-- **患者向け検索（キーワード）**
-  - `/patient` の `q` パラメータでフィルタ
-- **監査ログ**
-  - 記録: 動画/カテゴリ/一括反映（UI/API）
-  - 一覧 UI / API: `/staff/audit-logs` / `/api/audit-logs`
-- **PWA 基本対応**
-  - インストール可能（オフライン・プッシュ通知は不要）
+## 直近の完了事項
+- Neon Postgres へ移行（`postgresql` datasource / `DIRECT_URL` 追加）
+- Prisma migrate 実行（差分なしで同期確認）
+- モックデータ投入（カテゴリ6件 / 動画13件）
+- Postgres移行後のYouTubeアップロード手動テスト完了
+- 合併症/注意事項の登録・表示対応
+- 総合テスト（lint/typecheck/unit/e2e）完了
 
 ---
 
-## 未完了 / 改善余地
-- **YouTube 運用手順のドキュメント化**: 未整備（トークン更新/再連携手順）
-- **アプリアイコンの高解像度化**: 108x108 から拡大のため、1024px 版が用意でき次第差し替え推奨
+## 未完了 / 残タスク
+- YouTube OAuth / Secret Manager の運用手順ドキュメント化
+- PWAアイコンの高解像度差し替え（1024px）
+- 操作マニュアルの最終整理（ドキュメント一括整備）
 
 ---
 
-## 直近のテスト結果
+## テスト状況
 - `pnpm lint`: OK
 - `pnpm typecheck`: OK
 - `pnpm test:unit`: OK
@@ -84,15 +58,7 @@
 
 ---
 
-## 次にやること（優先度順）
-1. YouTube 運用手順のドキュメント化
-2. PWA アイコンの高解像度版差し替え（1024px 以上）
-
-## 変更
-1. UI明るめ（白基調）
-2. 合併症の説明項目
-3. QRコードで各自の端末で見れるように
-
-## 方向性
-1. 実際の説明用紙を使って音声を作り、スライドの後ろで流す
-2. 医師・看護師の動画 -> AI音声＋説明スライド ->　医師・看護師の動画
+## 次にやること
+1. YouTube連携運用手順のドキュメント化
+2. PWAアイコン（1024px）差し替え
+3. 操作マニュアルの最終整理

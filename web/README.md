@@ -1,60 +1,53 @@
 ## Requirements
 
-- Node.js 20.x（`.nvmrc` に合わせて `nvm use` で切り替え推奨）
-- pnpm 9.x（`corepack enable` で付属の pnpm を利用）
-- SQLite（ローカル `web/prisma/dev.db` を利用）
-
+- Node.js 20.x�E�E.nvmrc` に合わせて `nvm use` で刁E��替え推奨�E�E- pnpm 9.x�E�Ecorepack enable` で付属�E pnpm を利用�E�E- PostgreSQL�E�ローカル `Neon Postgres` を利用�E�E
 ## Local Setup
 
-1. Node バージョンを合わせる
-   ```bash
+1. Node バ�Eジョンを合わせめE   ```bash
    nvm use
    corepack enable
    ```
-2. 依存関係のインストール
+2. 依存関係�Eインスト�Eル
    ```bash
    corepack pnpm install
    ```
-3. 環境変数ファイルを用意
-   ```bash
+3. 環墁E��数ファイルを用愁E   ```bash
    cp .env.example .env.local
    ```
-4. データベース初期化（Prisma generate + db push）
-   ```bash
+4. チE�Eタベ�Eス初期化！Erisma generate + db push�E�E   ```bash
    corepack pnpm setup:db
    ```
-5. ダミーデータ投入（mock-data と同等のレコード）
-   ```bash
+5. ダミ�EチE�Eタ投�E�E�Eock-data と同等�Eレコード！E   ```bash
    corepack pnpm db:seed
    ```
-6. 開発サーバー
+6. 開発サーバ�E
    ```bash
    corepack pnpm dev
    ```
 
 ## Useful Scripts
 
-| コマンド | 説明 |
+| コマンチE| 説昁E|
 | --- | --- |
-| `pnpm dev` | Next.js 開発サーバー（http://localhost:3000） |
-| `pnpm lint` | ESLint を実行（`--max-warnings=0` で警告も検出） |
-| `pnpm typecheck` | TypeScript の型チェック（`tsc --noEmit`） |
-| `pnpm test:unit` | Vitest を実行（`--watch` で監視モード） |
-| `pnpm test:e2e` | Playwright を実行（主要ブラウザで並列） |
+| `pnpm dev` | Next.js 開発サーバ�E�E�Ettp://localhost:3000�E�E|
+| `pnpm lint` | ESLint を実行！E--max-warnings=0` で警告も検�E�E�E|
+| `pnpm typecheck` | TypeScript の型チェチE���E�Etsc --noEmit`�E�E|
+| `pnpm test:unit` | Vitest を実行！E--watch` で監視モード！E|
+| `pnpm test:e2e` | Playwright を実行（主要ブラウザで並列！E|
 | `pnpm setup:db` | `scripts/setup-db.mjs` 経由で Prisma generate + db push |
-| `pnpm db:seed` | mock データを SQLite に投入 |
-| `pnpm prisma:generate` | Prisma Client のみ再生成 |
+| `pnpm db:seed` | mock チE�EタめEPostgreSQL に投�E |
+| `pnpm prisma:generate` | Prisma Client のみ再生戁E|
 | `pnpm prisma:migrate` | Prisma Migrate 開発フロー |
 
 ## Environment Variables
 
-- `.env.local` を使用（`.env` には置かない）  
-- 既定の `DATABASE_URL` は `file:./prisma/dev.db`  
-- 他の機密情報を追加する際は `.env.example` も忘れずに更新
+- `.env.local` を使用�E�E.env` には置かなぁE��E 
+- 既定�E `DATABASE_URL` は `postgresql://USER:PASSWORD@HOST:PORT/DB?sslmode=require`  
+- 他�E機寁E��報を追加する際�E `.env.example` も忘れずに更新
 
 ## Additional Docs
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Learn Next.js](https://nextjs.org/learn)
 
-本番デプロイは Vercel を想定しています。`pnpm build` → `pnpm start` で動作確認のうえ、必要に応じて Vercel で新環境を作成してください。
+本番チE�Eロイは Vercel を想定してぁE��す。`pnpm build` ↁE`pnpm start` で動作確認�EぁE��、忁E��に応じて Vercel で新環墁E��作�Eしてください、E

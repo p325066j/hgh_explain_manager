@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -58,7 +58,7 @@ export default function VideoForm({ categories, action }: Props) {
           <input
             className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
             name="title"
-            placeholder="例: 内視鏡検査の準備"
+            placeholder="例: 胃内視鏡検査の準備"
             defaultValue={getValue(state.values?.title)}
             required
           />
@@ -69,11 +69,31 @@ export default function VideoForm({ categories, action }: Props) {
           <textarea
             className="min-h-[120px] rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
             name="description"
-            placeholder="患者さんに伝えたいポイントや注意事項を入力してください"
+            placeholder="動画の目的、検査前後の流れ、注意点などを入力してください"
             defaultValue={getValue(state.values?.description)}
             required
           />
           <FieldError errors={state.fieldErrors?.description} />
+        </label>
+        <label className="grid gap-2 text-sm text-slate-200">
+          合併症
+          <textarea
+            className="min-h-[120px] rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            name="complications"
+            placeholder="例: 出血、穿孔、鎮静薬による副作用など"
+            defaultValue={getValue(state.values?.complications)}
+          />
+          <FieldError errors={state.fieldErrors?.complications} />
+        </label>
+        <label className="grid gap-2 text-sm text-slate-200">
+          注意事項
+          <textarea
+            className="min-h-[120px] rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            name="precautions"
+            placeholder="例: 食事制限、来院時間、検査後の安静など"
+            defaultValue={getValue(state.values?.precautions)}
+          />
+          <FieldError errors={state.fieldErrors?.precautions} />
         </label>
         <label className="grid gap-2 text-sm text-slate-200">
           カテゴリ
@@ -95,17 +115,17 @@ export default function VideoForm({ categories, action }: Props) {
           <FieldError errors={state.fieldErrors?.categoryId} />
         </label>
         <label className="grid gap-2 text-sm text-slate-200">
-          手技・対象のキーワード
+          対象となる検査・治療（カンマ区切り）
           <input
             className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
             name="procedures"
-            placeholder="例: 内視鏡検査, 鎮静管理"
+            placeholder="例: 上部消化管内視鏡検査, 鎮静管理"
             defaultValue={getValue(state.values?.procedures)}
           />
-          <span className="text-xs text-slate-400">カンマ区切りで入力できます。</span>
+          <span className="text-xs text-slate-400">カンマ区切りで複数指定できます。</span>
         </label>
         <label className="grid gap-2 text-sm text-slate-200">
-          動画の長さ (分)
+          動画の長さ（分）
           <input
             type="number"
             min="1"
@@ -119,7 +139,7 @@ export default function VideoForm({ categories, action }: Props) {
       </fieldset>
 
       <fieldset className="grid gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5">
-        <legend className="px-2 text-sm font-semibold text-slate-200">動画 URL</legend>
+        <legend className="px-2 text-sm font-semibold text-slate-200">動画URL</legend>
         <label className="grid gap-2 text-sm text-slate-200">
           YouTube URL
           <input
@@ -135,7 +155,7 @@ export default function VideoForm({ categories, action }: Props) {
           <FieldError errors={state.fieldErrors?.fileUrl} />
         </label>
         <label className="grid gap-2 text-sm text-slate-200">
-          サムネイル URL (任意)
+          サムネイルURL（任意）
           <input
             className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
             name="thumbnailUrl"
@@ -147,7 +167,7 @@ export default function VideoForm({ categories, action }: Props) {
       </fieldset>
 
       <fieldset className="grid gap-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5">
-        <legend className="px-2 text-sm font-semibold text-slate-200">表示設定</legend>
+        <legend className="px-2 text-sm font-semibold text-slate-200">公開設定</legend>
         <label className="flex items-center gap-3 text-sm text-slate-200">
           <input
             type="radio"
@@ -155,7 +175,7 @@ export default function VideoForm({ categories, action }: Props) {
             value="false"
             defaultChecked={getValue(state.values?.isVisible) !== "true"}
           />
-          非表示（スタッフのみ）
+          非公開（スタッフのみ）
         </label>
         <label className="flex items-center gap-3 text-sm text-slate-200">
           <input
@@ -164,7 +184,7 @@ export default function VideoForm({ categories, action }: Props) {
             value="true"
             defaultChecked={getValue(state.values?.isVisible) === "true"}
           />
-          表示（患者端末に公開）
+          公開（患者向けに表示）
         </label>
       </fieldset>
 

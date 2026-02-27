@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useActionState } from "react";
 
@@ -61,7 +61,7 @@ export default function UploadForm({ categories, action }: Props) {
           name="title"
           defaultValue={state.values?.title ?? ""}
           className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
-          placeholder="例: 上部消化管内視鏡検査の流れ"
+          placeholder="例: 上部消化管内視鏡検査の準備"
           required
         />
         {getError(state.fieldErrors, "title") && (
@@ -76,7 +76,7 @@ export default function UploadForm({ categories, action }: Props) {
           rows={4}
           defaultValue={state.values?.description ?? ""}
           className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
-          placeholder="例: 検査の目的と注意事項を説明しています。"
+          placeholder="動画の目的や注意事項などを入力してください"
           required
         />
         {getError(state.fieldErrors, "description") && (
@@ -85,7 +85,39 @@ export default function UploadForm({ categories, action }: Props) {
       </label>
 
       <label className="grid gap-2 text-sm text-slate-200">
-        カテゴリ（アプリ内）
+        合併症
+        <textarea
+          name="complications"
+          rows={4}
+          defaultValue={state.values?.complications ?? ""}
+          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          placeholder="例: 出血、穿孔、鎮静薬による副作用など"
+        />
+        {getError(state.fieldErrors, "complications") && (
+          <span className="text-xs text-rose-200">
+            {getError(state.fieldErrors, "complications")}
+          </span>
+        )}
+      </label>
+
+      <label className="grid gap-2 text-sm text-slate-200">
+        注意事項
+        <textarea
+          name="precautions"
+          rows={4}
+          defaultValue={state.values?.precautions ?? ""}
+          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          placeholder="例: 食事制限、来院時間、検査後の安静など"
+        />
+        {getError(state.fieldErrors, "precautions") && (
+          <span className="text-xs text-rose-200">
+            {getError(state.fieldErrors, "precautions")}
+          </span>
+        )}
+      </label>
+
+      <label className="grid gap-2 text-sm text-slate-200">
+        カテゴリ（アプリ側）
         <select
           name="categoryId"
           defaultValue={state.values?.categoryId ?? ""}
@@ -115,22 +147,22 @@ export default function UploadForm({ categories, action }: Props) {
           placeholder="例: 27（Education）"
         />
         <span className="text-xs text-slate-400">
-          指定がない場合は {DEFAULT_CATEGORY_ID} を使用します。
+          省略時は {DEFAULT_CATEGORY_ID} を使用します。
         </span>
       </label>
 
       <label className="grid gap-2 text-sm text-slate-200">
-        関連する検査・治療（カンマ区切り）
+        対象となる検査・治療（カンマ区切り）
         <input
           name="procedures"
           defaultValue={state.values?.procedures ?? ""}
           className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
-          placeholder="例: 胃カメラ, 上部消化管内視鏡"
+          placeholder="例: 内視鏡検査, CT検査"
         />
       </label>
 
       <label className="grid gap-2 text-sm text-slate-200">
-        目安の所要時間（分）
+        動画の長さ（分）
         <input
           name="duration"
           type="number"
@@ -156,7 +188,7 @@ export default function UploadForm({ categories, action }: Props) {
         disabled={isPending}
         className="rounded-full border border-sky-500/40 bg-sky-500/20 px-6 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isPending ? "アップロード中..." : "YouTube にアップロード"}
+        {isPending ? "アップロード中..." : "YouTubeにアップロード"}
       </button>
     </form>
   );

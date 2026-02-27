@@ -1,10 +1,10 @@
+﻿import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
+import { redirect } from "next/navigation";
 import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { uploadYouTubeVideo } from "@/lib/youtube";
 import { videoUploadSchema } from "@/lib/validators";
-import { redirect } from "next/navigation";
 import UploadForm from "./upload-form";
 
 const extractThumbnailUrl = (thumbnails?: {
@@ -65,7 +65,7 @@ async function uploadVideo(formData: FormData): Promise<FormState> {
     if (!videoId) {
       return {
         ok: false,
-        message: "YouTube のアップロードに失敗しました（動画IDが取得できません）。",
+        message: "YouTubeへのアップロードに失敗しました。動画IDが取得できません。",
         values: raw,
       };
     }
@@ -78,6 +78,8 @@ async function uploadVideo(formData: FormData): Promise<FormState> {
         id: videoId,
         title: data.title,
         description: data.description,
+        complications: data.complications ?? null,
+        precautions: data.precautions ?? null,
         procedures: (data.procedures ?? []).join(", "),
         duration: data.duration,
         fileUrl,
@@ -104,7 +106,7 @@ async function uploadVideo(formData: FormData): Promise<FormState> {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         ok: false,
-        message: "同じ動画がすでに登録されています。",
+        message: "この動画は既に登録されています。",
         values: raw,
       };
     }
@@ -130,7 +132,7 @@ export default async function StaffVideoUploadPage() {
       <header className="space-y-2">
         <h1 className="text-xl font-semibold text-white">動画アップロード</h1>
         <p className="text-sm text-slate-300">
-          動画ファイルを YouTube にアップロードし、アプリに登録します。
+          動画ファイルをYouTubeにアップロードし、アプリに登録します。
         </p>
       </header>
 

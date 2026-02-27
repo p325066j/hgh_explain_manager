@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const categoryCreateSchema = z.object({
   name: z.string().min(1).max(120),
@@ -49,7 +49,7 @@ const youTubeUrlSchema = z.preprocess(
     .refine((value) => {
       const id = extractYouTubeId(value);
       return Boolean(id && id.length === 11);
-    }, "YouTube の動画 URL を入力してください"),
+    }, "YouTube の動画URLを入力してください"),
 );
 
 const booleanFromForm = z.preprocess((value) => {
@@ -58,9 +58,20 @@ const booleanFromForm = z.preprocess((value) => {
   return value;
 }, z.boolean());
 
+const optionalText = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") return value;
+    const trimmed = value.trim();
+    return trimmed.length === 0 ? undefined : trimmed;
+  },
+  z.string().max(10_000).optional(),
+);
+
 export const videoCreateSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().min(1).max(10_000),
+  complications: optionalText,
+  precautions: optionalText,
   categoryId: z.string().min(1),
   procedures: z
     .string()
@@ -84,6 +95,8 @@ export const videoCreateSchema = z.object({
 export const videoUploadSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().min(1).max(10_000),
+  complications: optionalText,
+  precautions: optionalText,
   categoryId: z.string().min(1),
   procedures: z
     .string()

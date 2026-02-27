@@ -1,12 +1,13 @@
 // Prisma schema defining the domain models for HGH Explain Manager.
-// SQLite を利用し、動画メタ情報とカテゴリ構造を管理する。
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum VisibilitySyncStatus {
@@ -40,10 +41,12 @@ model Category {
 }
 
 model Video {
-  /// YouTube の videoId を主キーとして利用する
+  /// YouTube �� videoId ����L�[�Ƃ��Ďg�p����
   id                   String               @id
   title                String
   description          String
+  complications        String?
+  precautions          String?
   procedures           String?
   duration             Int?
   fileUrl              String

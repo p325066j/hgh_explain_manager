@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 
@@ -53,6 +53,15 @@ export default async function PatientVideoDetailPage({ params }: Props) {
 
   const embedUrl = getYouTubeEmbedUrl(video.fileUrl);
   const categoryNames = video.videoCategories.map((item) => item.category.name).join(", ");
+  const complications = video.complications?.trim() ?? "";
+  const precautions = video.precautions?.trim() ?? "";
+
+  const renderText = (value: string, emptyText: string) => {
+    if (!value) {
+      return <p className="text-sm text-slate-400">{emptyText}</p>;
+    }
+    return <p className="whitespace-pre-line text-sm text-slate-200">{value}</p>;
+  };
 
   return (
     <div className="grid gap-6">
@@ -95,7 +104,7 @@ export default async function PatientVideoDetailPage({ params }: Props) {
         </div>
 
         <div className="grid gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4">
-          <p className="text-sm text-slate-200">関連する検査・治療</p>
+          <p className="text-sm text-slate-200">対象となる検査・治療</p>
           {procedures.length === 0 ? (
             <p className="text-sm text-slate-400">登録されていません。</p>
           ) : (
@@ -107,17 +116,28 @@ export default async function PatientVideoDetailPage({ params }: Props) {
           )}
         </div>
 
+        <div className="grid gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4">
+          <p className="text-sm text-slate-200">合併症</p>
+          {renderText(complications, "登録されていません。")}
+        </div>
+
+        <div className="grid gap-2 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4">
+          <p className="text-sm text-slate-200">注意事項</p>
+          {renderText(precautions, "登録されていません。")}
+        </div>
+
         <footer className="flex flex-col gap-1 text-xs text-slate-400">
           <span>
-            更新日時:{" "}
+            最終更新日{" "}
             {new Date(video.updatedAt).toLocaleString("ja-JP", {
               dateStyle: "medium",
               timeStyle: "short",
             })}
           </span>
-          <span>公開範囲: 公開</span>
+          <span>公開状態: {video.isVisible ? "公開" : "非公開"}</span>
         </footer>
       </section>
     </div>
   );
 }
+
