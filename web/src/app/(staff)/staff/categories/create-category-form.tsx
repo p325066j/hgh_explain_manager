@@ -38,7 +38,7 @@ export default function CreateCategoryForm({ action }: Props) {
       <label className="grid gap-1 text-xs text-slate-300">
         名称
         <input
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input text-sm"
           name="name"
           placeholder="例: 入院説明"
           defaultValue={state.values?.name ?? ""}
@@ -51,7 +51,7 @@ export default function CreateCategoryForm({ action }: Props) {
       <label className="grid gap-1 text-xs text-slate-300">
         スラッグ
         <input
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input text-sm"
           name="slug"
           placeholder="例: hospitalization"
           defaultValue={state.values?.slug ?? ""}
@@ -67,7 +67,7 @@ export default function CreateCategoryForm({ action }: Props) {
       <label className="grid gap-1 text-xs text-slate-300">
         並び順
         <input
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input text-sm"
           name="order"
           type="number"
           min="0"
@@ -82,7 +82,7 @@ export default function CreateCategoryForm({ action }: Props) {
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-full border border-sky-500/40 bg-sky-500/10 px-5 py-2 text-sm font-semibold text-sky-200 transition hover:border-sky-400 hover:text-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+          className="ui-primary-btn"
         >
           {isPending ? "追加中..." : "追加"}
         </button>

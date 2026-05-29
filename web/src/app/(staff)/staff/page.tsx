@@ -30,37 +30,34 @@ export default async function StaffHomePage() {
 
     return (
       <div className="grid gap-10">
-        <section className="grid gap-4 rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6 sm:grid-cols-2 lg:grid-cols-4">
-          <article className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-4">
-            <h2 className="text-sm text-emerald-100">表示中の動画</h2>
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <article className="rounded-2xl border border-emerald-400 bg-emerald-600 p-4">
+            <h2 className="text-m text-slate-100">表示中の動画</h2>
             <p className="mt-2 text-2xl font-semibold text-white">{visible}</p>
           </article>
-          <article className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-4">
-            <h2 className="text-sm text-slate-200">非表示の動画</h2>
+          <article className="rounded-2xl border border-red-400 bg-red-500 p-4">
+            <h2 className="text-m text-slate-100">非表示の動画</h2>
             <p className="mt-2 text-2xl font-semibold text-white">{hidden}</p>
           </article>
-          <article className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4">
-            <h2 className="text-sm text-amber-100">アーカイブ</h2>
+          <article className="rounded-2xl border border-amber-400 bg-amber-500 p-4">
+            <h2 className="text-m text-slate-100">アーカイブ</h2>
             <p className="mt-2 text-2xl font-semibold text-white">{archived}</p>
           </article>
-          <article className="rounded-2xl border border-sky-500/20 bg-sky-500/10 p-4">
-            <h2 className="text-sm text-sky-200">登録済み動画</h2>
+          <article className="rounded-2xl border border-sky-400 bg-sky-600 p-4">
+            <h2 className="text-m text-slate-100">登録済み動画</h2>
             <p className="mt-2 text-2xl font-semibold text-white">{total}</p>
           </article>
         </section>
 
-        <section className="grid gap-4 rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6">
+        <section className="ui-card grid gap-4">
           <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white">最新の更新</h2>
-              <p className="text-sm text-slate-300">
-                直近で更新された動画を確認できます。
-              </p>
+              <h2 className="text-xl font-semibold text-white">最新の更新</h2>
             </div>
           </header>
           <div className="overflow-hidden rounded-2xl border border-slate-800/80">
-            <table className="w-full table-auto text-left text-sm text-slate-200">
-              <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+            <table className="w-full table-auto text-left text-m text-slate-200">
+              <thead className="bg-[#249191] text-sm uppercase tracking-wide text-slate-100">
                 <tr>
                   <th className="px-4 py-3">タイトル</th>
                   <th className="px-4 py-3">カテゴリ</th>
@@ -94,7 +91,7 @@ export default async function StaffHomePage() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-2">
-          <article className="space-y-4 rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6">
+          <article className="space-y-4 rounded-3xl border border-red-400 bg-red-500 p-6">
             <header>
               <h2 className="text-lg font-semibold text-white">非表示の動画</h2>
               <p className="text-sm text-slate-300">
@@ -103,7 +100,7 @@ export default async function StaffHomePage() {
             </header>
             <ul className="space-y-3">
               {hiddenVideos.length === 0 && (
-                <li className="rounded-2xl border border-slate-700/80 bg-slate-800/70 px-4 py-3 text-sm text-slate-300">
+                <li className="rounded-2xl border border-slate-700 bg-slate-400 px-4 py-3 text-sm text-slate-300">
                   現在、非表示の動画はありません。
                 </li>
               )}
@@ -122,7 +119,7 @@ export default async function StaffHomePage() {
             </ul>
           </article>
 
-          <article className="space-y-4 rounded-3xl border border-amber-400/20 bg-amber-500/10 p-6">
+          <article className="space-y-4 rounded-3xl border border-amber-400 bg-amber-500 p-6">
             <header>
               <h2 className="text-lg font-semibold text-white">アーカイブ</h2>
               <p className="text-sm text-amber-100">

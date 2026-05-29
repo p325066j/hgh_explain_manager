@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
@@ -9,8 +8,8 @@ const getStatus = (isVisible: boolean, isArchived: boolean) => {
 };
 
 const badgeClass: Record<ReturnType<typeof getStatus>, string> = {
-  表示中: "border-emerald-400/40 bg-emerald-500/10 text-emerald-100",
-  非表示: "border-slate-600 bg-slate-800 text-slate-200",
+  表示中: "border-white bg-orange-600/90 text-white",
+  非表示: "border-white text-white",
   アーカイブ: "border-amber-400/40 bg-amber-500/10 text-amber-100",
 };
 
@@ -63,30 +62,19 @@ export default async function StaffVideosPage() {
 
   return (
     <div className="grid gap-8">
-      <header className="flex flex-col gap-4 rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6 sm:flex-row sm:items-center sm:justify-between">
+      <header className="ui-card flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-white">動画ライブラリ</h1>
-          <p className="text-sm text-slate-300">カテゴリ別に整理された動画一覧です。</p>
+          <h1 className="ui-title">動画ライブラリ</h1>
+          <p className="text-sm text-slate-300">検索機能つけるか</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/staff/videos/upload"
-            className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:border-emerald-400 hover:text-emerald-50"
-          >
-            アップロード
-          </Link>
-          <Link
-            href="/staff/videos/new"
-            className="inline-flex items-center gap-2 rounded-full border border-sky-500/40 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-200 transition hover:border-sky-400 hover:text-sky-100"
-          >
-            URL登録
-          </Link>
+    
         </div>
       </header>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-800/80">
+      <div className="overflow-hidden rounded-3xl border border-slate-800/80 bg-[#249191]/90">
         <table className="w-full table-auto text-left text-sm text-slate-200">
-          <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+          <thead className="bg-[#126666] text-sm uppercase tracking-wide text-white">
             <tr>
               <th className="px-5 py-3">タイトル</th>
               <th className="px-5 py-3">カテゴリ</th>
@@ -106,12 +94,12 @@ export default async function StaffVideosPage() {
               return (
                 <tr key={video.id} className="hover:bg-slate-900/60">
                   <td className="px-5 py-4">
-                    <p className="font-semibold text-white">{video.title}</p>
-                    <p className="text-xs text-slate-400">{video.description}</p>
+                    <p className="text-xl font-semibold text-white">{video.title}</p>
+                    <p className="text-xs text-white">{video.description}</p>
                   </td>
-                  <td className="px-5 py-4">{categoryNames || "-"}</td>
-                  <td className="px-5 py-4">{durationLabel}</td>
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-4 text-sm text-white">{categoryNames || "-"}</td>
+                  <td className="px-5 py-4 text-sm text-white">{durationLabel}</td>
+                  <td className="px-5 py-4 text-sm text-white">
                     <span
                       className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs uppercase tracking-wide ${badgeClass[status]}`}
                     >
@@ -119,7 +107,7 @@ export default async function StaffVideosPage() {
                     </span>
                   </td>
                   <td className="px-5 py-4">
-                    <div className="text-xs text-slate-200">
+                    <div className="text-xs text-white">
                       {syncLabel[video.visibilitySyncStatus] ?? video.visibilitySyncStatus}
                     </div>
                     {video.visibilitySyncError && (
@@ -132,7 +120,7 @@ export default async function StaffVideosPage() {
                         <input type="hidden" name="videoId" value={video.id} />
                         <button
                           type="submit"
-                          className="rounded-full border border-slate-700/80 px-3 py-1 text-xs text-slate-200 transition hover:border-sky-400 hover:text-white"
+                          className="ui-secondary-btn min-h-0 px-3 py-1 text-xs"
                         >
                           {video.isVisible ? "非表示にする" : "表示にする"}
                         </button>

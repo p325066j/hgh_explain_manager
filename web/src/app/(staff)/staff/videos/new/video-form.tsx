@@ -25,7 +25,7 @@ const SubmitButton = () => {
   return (
     <button
       type="submit"
-      className="rounded-full border border-sky-500/40 bg-sky-500/20 px-6 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+      className="ui-primary-btn px-6"
       disabled={pending}
     >
       {pending ? "送信中..." : "登録して保存"}
@@ -51,12 +51,12 @@ export default function VideoForm({ categories, action }: Props) {
         </div>
       )}
 
-      <fieldset className="grid gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5">
-        <legend className="px-2 text-sm font-semibold text-slate-200">基本情報</legend>
+      <fieldset className="ui-subcard-form grid gap-4 p-5">
+        <legend className="border border-[#126666] rounded-xl bg-[#126666] px-2 text-m font-semibold text-white">基本情報</legend>
         <label className="grid gap-2 text-sm text-slate-200">
           タイトル
           <input
-            className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white"
             name="title"
             placeholder="例: 胃内視鏡検査の準備"
             defaultValue={getValue(state.values?.title)}
@@ -67,7 +67,7 @@ export default function VideoForm({ categories, action }: Props) {
         <label className="grid gap-2 text-sm text-slate-200">
           説明
           <textarea
-            className="min-h-[120px] rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white min-h-[120px]"
             name="description"
             placeholder="動画の目的、検査前後の流れ、注意点などを入力してください"
             defaultValue={getValue(state.values?.description)}
@@ -78,7 +78,7 @@ export default function VideoForm({ categories, action }: Props) {
         <label className="grid gap-2 text-sm text-slate-200">
           合併症
           <textarea
-            className="min-h-[120px] rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white min-h-[120px]"
             name="complications"
             placeholder="例: 出血、穿孔、鎮静薬による副作用など"
             defaultValue={getValue(state.values?.complications)}
@@ -88,7 +88,7 @@ export default function VideoForm({ categories, action }: Props) {
         <label className="grid gap-2 text-sm text-slate-200">
           注意事項
           <textarea
-            className="min-h-[120px] rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white min-h-[120px]"
             name="precautions"
             placeholder="例: 食事制限、来院時間、検査後の安静など"
             defaultValue={getValue(state.values?.precautions)}
@@ -98,7 +98,7 @@ export default function VideoForm({ categories, action }: Props) {
         <label className="grid gap-2 text-sm text-slate-200">
           カテゴリ
           <select
-            className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white"
             name="categoryId"
             defaultValue={getValue(state.values?.categoryId)}
             required
@@ -117,7 +117,7 @@ export default function VideoForm({ categories, action }: Props) {
         <label className="grid gap-2 text-sm text-slate-200">
           対象となる検査・治療（カンマ区切り）
           <input
-            className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white"
             name="procedures"
             placeholder="例: 上部消化管内視鏡検査, 鎮静管理"
             defaultValue={getValue(state.values?.procedures)}
@@ -129,7 +129,7 @@ export default function VideoForm({ categories, action }: Props) {
           <input
             type="number"
             min="1"
-            className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white"
             name="duration"
             placeholder="8"
             defaultValue={getValue(state.values?.duration)}
@@ -138,12 +138,12 @@ export default function VideoForm({ categories, action }: Props) {
         </label>
       </fieldset>
 
-      <fieldset className="grid gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5">
-        <legend className="px-2 text-sm font-semibold text-slate-200">動画URL</legend>
+      <fieldset className="ui-subcard-form grid gap-4 p-5">
+        <legend className="border border-[#126666] rounded-xl bg-[#126666] px-2 text-m font-semibold text-white">動画URL</legend>
         <label className="grid gap-2 text-sm text-slate-200">
           YouTube URL
           <input
-            className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white"
             name="fileUrl"
             placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx"
             defaultValue={getValue(state.values?.fileUrl)}
@@ -157,7 +157,7 @@ export default function VideoForm({ categories, action }: Props) {
         <label className="grid gap-2 text-sm text-slate-200">
           サムネイルURL（任意）
           <input
-            className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            className="ui-input-white"
             name="thumbnailUrl"
             placeholder="https://i.ytimg.com/vi/xxxxxxxxxxx/hqdefault.jpg"
             defaultValue={getValue(state.values?.thumbnailUrl)}
@@ -166,8 +166,8 @@ export default function VideoForm({ categories, action }: Props) {
         </label>
       </fieldset>
 
-      <fieldset className="grid gap-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5">
-        <legend className="px-2 text-sm font-semibold text-slate-200">公開設定</legend>
+      <fieldset className="ui-subcard-form grid gap-3 p-5">
+        <legend className="border border-[#126666] rounded-xl bg-[#126666] px-2 text-m font-semibold text-white">公開設定</legend>
         <label className="flex items-center gap-3 text-sm text-slate-200">
           <input
             type="radio"
@@ -191,7 +191,7 @@ export default function VideoForm({ categories, action }: Props) {
       <div className="flex flex-wrap justify-end gap-3">
         <button
           type="reset"
-          className="rounded-full border border-slate-700/80 px-5 py-2 text-sm text-slate-300 transition hover:border-slate-500 hover:text-slate-100"
+          className="ui-secondary-btn"
         >
           クリア
         </button>

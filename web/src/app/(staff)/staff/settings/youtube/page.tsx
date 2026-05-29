@@ -56,14 +56,14 @@ export default async function StaffYouTubeSettingsPage() {
 
   return (
     <div className="grid gap-6">
-      <section className="rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6">
-        <h1 className="text-xl font-semibold text-white">YouTube 連携設定</h1>
+      <section className="ui-card">
+        <h1 className="ui-title">YouTube 連携設定</h1>
         <p className="mt-2 text-sm text-slate-300">
           公開/非公開の変更は一括反映で YouTube に同期されます。
         </p>
       </section>
 
-      <section className="rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6">
+      <section className="ui-card">
         <h2 className="text-sm font-semibold text-slate-200">公開状態の一括反映</h2>
         <p className="mt-2 text-sm text-slate-300">
           変更があった動画のみを対象に反映します。反映対象: {dirtyVideos.length} 件
@@ -79,14 +79,14 @@ export default async function StaffYouTubeSettingsPage() {
         <form action={runVisibilitySync} className="mt-4">
           <button
             type="submit"
-            className="rounded-full border border-sky-500/40 bg-sky-500/20 px-5 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-400 hover:text-white"
+            className="ui-primary-btn"
           >
             一括反映を実行
           </button>
         </form>
       </section>
 
-      <section className="rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6">
+      <section className="ui-card">
         <h2 className="text-sm font-semibold text-slate-200">反映対象の動画</h2>
         {dirtyVideos.length === 0 ? (
           <p className="mt-3 text-sm text-slate-400">反映対象の動画はありません。</p>

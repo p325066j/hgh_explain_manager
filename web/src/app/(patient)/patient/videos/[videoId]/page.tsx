@@ -67,12 +67,12 @@ export default async function PatientVideoDetailPage({ params }: Props) {
     <div className="grid gap-6">
       <Link
         href="/patient"
-        className="inline-flex items-center gap-2 text-sm text-sky-200 underline underline-offset-4"
+        className="ui-link inline-flex items-center gap-2 text-sm"
       >
         カテゴリ一覧に戻る
       </Link>
 
-      <section className="grid gap-4 rounded-3xl border border-slate-800/70 bg-slate-900/60 p-6">
+      <section className="ui-card grid gap-4">
         <header className="space-y-2">
           <p className="text-xs uppercase tracking-[0.3em] text-sky-300">
             {categoryNames || "カテゴリ未設定"}

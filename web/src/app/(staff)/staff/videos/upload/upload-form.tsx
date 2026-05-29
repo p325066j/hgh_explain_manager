@@ -47,7 +47,7 @@ export default function UploadForm({ categories, action }: Props) {
           name="file"
           type="file"
           accept="video/*"
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white file:mr-4 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-slate-100"
+          className="ui-input-white text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-slate-100"
           required
         />
         {getError(state.fieldErrors, "file") && (
@@ -60,7 +60,7 @@ export default function UploadForm({ categories, action }: Props) {
         <input
           name="title"
           defaultValue={state.values?.title ?? ""}
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input-white text-sm"
           placeholder="例: 上部消化管内視鏡検査の準備"
           required
         />
@@ -75,7 +75,7 @@ export default function UploadForm({ categories, action }: Props) {
           name="description"
           rows={4}
           defaultValue={state.values?.description ?? ""}
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input-white min-h-[120px] text-sm"
           placeholder="動画の目的や注意事項などを入力してください"
           required
         />
@@ -90,7 +90,7 @@ export default function UploadForm({ categories, action }: Props) {
           name="complications"
           rows={4}
           defaultValue={state.values?.complications ?? ""}
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input-white min-h-[120px] text-sm"
           placeholder="例: 出血、穿孔、鎮静薬による副作用など"
         />
         {getError(state.fieldErrors, "complications") && (
@@ -106,7 +106,7 @@ export default function UploadForm({ categories, action }: Props) {
           name="precautions"
           rows={4}
           defaultValue={state.values?.precautions ?? ""}
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input-white min-h-[120px] text-sm"
           placeholder="例: 食事制限、来院時間、検査後の安静など"
         />
         {getError(state.fieldErrors, "precautions") && (
@@ -121,7 +121,7 @@ export default function UploadForm({ categories, action }: Props) {
         <select
           name="categoryId"
           defaultValue={state.values?.categoryId ?? ""}
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input-white text-sm"
           required
         >
           <option value="" disabled>
@@ -143,7 +143,7 @@ export default function UploadForm({ categories, action }: Props) {
         <input
           name="youtubeCategoryId"
           defaultValue={state.values?.youtubeCategoryId ?? DEFAULT_CATEGORY_ID}
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input-white text-sm"
           placeholder="例: 27（Education）"
         />
         <span className="text-xs text-slate-400">
@@ -156,7 +156,7 @@ export default function UploadForm({ categories, action }: Props) {
         <input
           name="procedures"
           defaultValue={state.values?.procedures ?? ""}
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input-white text-sm"
           placeholder="例: 内視鏡検査, CT検査"
         />
       </label>
@@ -169,7 +169,7 @@ export default function UploadForm({ categories, action }: Props) {
           min={1}
           max={600}
           defaultValue={state.values?.duration ?? ""}
-          className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+          className="ui-input-white text-sm"
         />
       </label>
 
@@ -186,7 +186,7 @@ export default function UploadForm({ categories, action }: Props) {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-full border border-sky-500/40 bg-sky-500/20 px-6 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-400 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="ui-primary-btn rounded-full text-white px-6 py-2 text-sm font-semibold transition disabled:opacity-60"
       >
         {isPending ? "アップロード中..." : "YouTubeにアップロード"}
       </button>

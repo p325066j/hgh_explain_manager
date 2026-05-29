@@ -1,7 +1,9 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { requireStaffApiRateLimit } from "@/lib/staff-api-rate-limit";
 import { logAudit } from "@/lib/audit";
+import { requireStaffApiAuth } from "@/lib/staff-auth";
 import { videoCreateSchema } from "@/lib/validators";
 
 const extractYouTubeId = (url: string) => {
@@ -25,6 +27,11 @@ const extractYouTubeId = (url: string) => {
 };
 
 export async function GET(req: NextRequest) {
+  const unauthorized = await requireStaffApiAuth(req);
+  if (unauthorized) return unauthorized;
+  const rateLimited = await requireStaffApiRateLimit(req, { maxRequests: 120, windowMs: 60 * 1000 });
+  if (rateLimited) return rateLimited;
+
   const { searchParams } = new URL(req.url);
   const categoryId = searchParams.get("categoryId") ?? undefined;
   const q = searchParams.get("q")?.trim() ?? undefined;
@@ -52,6 +59,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const unauthorized = await requireStaffApiAuth(req);
+  if (unauthorized) return unauthorized;
+  const rateLimited = await requireStaffApiRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
+  if (rateLimited) return rateLimited;
+
   const json = await req.json().catch(() => ({}));
   const parsed = videoCreateSchema.safeParse(json);
   if (!parsed.success) {

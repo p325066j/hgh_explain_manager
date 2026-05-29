@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logAudit } from "@/lib/audit";
+import { requireStaffApiRateLimit } from "@/lib/staff-api-rate-limit";
 import { prisma } from "@/lib/db";
+import { requireStaffApiAuth } from "@/lib/staff-auth";
 import { categoryUpdateSchema } from "@/lib/validators";
 
 type Params = {
@@ -9,7 +11,12 @@ type Params = {
   }>;
 };
 
-export async function GET(_: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
+  const unauthorized = await requireStaffApiAuth(req);
+  if (unauthorized) return unauthorized;
+  const rateLimited = await requireStaffApiRateLimit(req, { maxRequests: 120, windowMs: 60 * 1000 });
+  if (rateLimited) return rateLimited;
+
   const { id } = await params;
   const category = await prisma.category.findUnique({ where: { id } });
   if (!category) {
@@ -19,6 +26,11 @@ export async function GET(_: NextRequest, { params }: Params) {
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
+  const unauthorized = await requireStaffApiAuth(req);
+  if (unauthorized) return unauthorized;
+  const rateLimited = await requireStaffApiRateLimit(req, { maxRequests: 60, windowMs: 60 * 1000 });
+  if (rateLimited) return rateLimited;
+
   const json = await req.json().catch(() => ({}));
   const parsed = categoryUpdateSchema.safeParse(json);
   if (!parsed.success) {
@@ -47,7 +59,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, { params }: Params) {
+  const unauthorized = await requireStaffApiAuth(req);
+  if (unauthorized) return unauthorized;
+  const rateLimited = await requireStaffApiRateLimit(req, { maxRequests: 20, windowMs: 60 * 1000 });
+  if (rateLimited) return rateLimited;
+
   try {
     const { id } = await params;
     const deleted = await prisma.category.delete({ where: { id } });

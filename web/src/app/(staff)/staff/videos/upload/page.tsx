@@ -128,9 +128,9 @@ export default async function StaffVideoUploadPage() {
   const categories = await prisma.category.findMany({ orderBy: { order: "asc" } });
 
   return (
-    <div className="grid gap-8 rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6">
+    <div className="ui-card-form grid gap-8">
       <header className="space-y-2">
-        <h1 className="text-xl font-semibold text-white">動画アップロード</h1>
+        <h1 className="ui-title">動画アップロード</h1>
         <p className="text-sm text-slate-300">
           動画ファイルをYouTubeにアップロードし、アプリに登録します。
         </p>

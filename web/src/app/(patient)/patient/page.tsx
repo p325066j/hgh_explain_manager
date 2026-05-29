@@ -39,8 +39,8 @@ export default async function PatientTopPage({ searchParams }: Props) {
 
   return (
     <div className="grid gap-6">
-      <section className="rounded-3xl border border-slate-800/70 bg-slate-900/60 p-6">
-        <h1 className="text-2xl font-semibold text-white">説明動画を検索</h1>
+      <section className="ui-card-patient">
+        <h1 className="text-xl font-semibold text-white">説明動画を検索</h1>
         <p className="mt-2 text-sm text-slate-300">
           カテゴリを選ぶ前に、キーワードで動画を絞り込めます。
         </p>
@@ -48,20 +48,20 @@ export default async function PatientTopPage({ searchParams }: Props) {
           <input
             name="q"
             defaultValue={q}
-            placeholder="キーワードを入力（タイトル・説明）"
-            className="w-full rounded-xl border border-slate-700/80 bg-slate-950 px-4 py-2 text-base text-white focus:border-sky-400 focus:outline-none"
+            placeholder="キーワードを入力（例：胃カメラ・エコー検査・CTなど）"
+            className="ui-input"
           />
           <div className="flex gap-2">
             <button
               type="submit"
-              className="rounded-full border border-sky-500/40 bg-sky-500/20 px-5 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-400 hover:text-white"
+              className="ui-primary-btn"
             >
               検索
             </button>
             {hasQuery && (
               <Link
                 href="/patient"
-                className="rounded-full border border-slate-700/80 px-5 py-2 text-sm text-slate-200 transition hover:border-slate-500 hover:text-white"
+                className="ui-secondary-btn"
               >
                 クリア
               </Link>
@@ -85,7 +85,7 @@ export default async function PatientTopPage({ searchParams }: Props) {
         return (
           <section
             key={category.id}
-            className="rounded-3xl border border-slate-800/70 bg-slate-900/60 p-6"
+            className="ui-card"
           >
             <header className="mb-4">
               <h2 className="text-2xl font-semibold text-white">{category.name}</h2>

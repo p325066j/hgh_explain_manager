@@ -41,7 +41,7 @@ model Category {
 }
 
 model Video {
-  /// YouTube の videoId を主キーとして使用する
+  /// YouTube 縺ｮ videoId 繧剃ｸｻ繧ｭ繝ｼ縺ｨ縺励※菴ｿ逕ｨ縺吶ｋ
   id                   String               @id
   title                String
   description          String
@@ -91,4 +91,28 @@ model AuditLog {
   @@index([entityType])
   @@index([entityId])
   @@index([createdAt])
+}
+
+model StaffLoginRateLimit {
+  key           String   @id
+  failedCount   Int      @default(0)
+  firstFailedAt DateTime
+  blockedUntil  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([blockedUntil])
+  @@index([updatedAt])
+}
+
+model StaffApiRateLimit {
+  key             String   @id
+  requestCount    Int      @default(0)
+  windowStartedAt DateTime
+  blockedUntil    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([blockedUntil])
+  @@index([updatedAt])
 }

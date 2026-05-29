@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuditAction, AuditEntityType, Prisma } from "@prisma/client";
+import { requireStaffApiRateLimit } from "@/lib/staff-api-rate-limit";
 import { prisma } from "@/lib/db";
+import { requireStaffApiAuth } from "@/lib/staff-auth";
 
 const entityTypes = [
   AuditEntityType.VIDEO,
@@ -21,6 +23,11 @@ const toEntityType = (value?: string) =>
 const toAction = (value?: string) => actions.find((item) => item === value);
 
 export async function GET(req: NextRequest) {
+  const unauthorized = await requireStaffApiAuth(req);
+  if (unauthorized) return unauthorized;
+  const rateLimited = await requireStaffApiRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
+  if (rateLimited) return rateLimited;
+
   const { searchParams } = new URL(req.url);
   const entityType = toEntityType(searchParams.get("entityType") ?? undefined);
   const action = toAction(searchParams.get("action") ?? undefined);

@@ -142,20 +142,20 @@ export default async function StaffCategoriesPage() {
   }));
 
   return (
-    <div className="grid gap-8 rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6">
+    <div className="ui-card-form grid gap-8">
       <header className="space-y-2">
-        <h1 className="text-xl font-semibold text-white">カテゴリ管理</h1>
+        <h1 className="ui-title">カテゴリ管理</h1>
         <p className="text-sm text-slate-300">
           動画を整理するためのカテゴリを管理します。並び替えはドラッグで変更できます。
         </p>
       </header>
 
-      <section className="grid gap-4 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5">
+      <section className="ui-subcard grid gap-4 p-5">
         <h2 className="text-sm font-semibold text-slate-200">カテゴリの追加</h2>
         <CreateCategoryForm action={createCategory} />
       </section>
 
-      <section className="grid gap-3 rounded-2xl border border-slate-800/80 bg-slate-900/80 p-5">
+      <section className="ui-subcard grid gap-3 p-5">
         <h2 className="text-sm font-semibold text-slate-200">並び替え</h2>
         <p className="text-xs text-slate-400">
           カテゴリをドラッグして順番を変更し、「並び順を保存」を押してください。
@@ -220,7 +220,7 @@ export default async function StaffCategoriesPage() {
                 <div className="flex items-end">
                   <button
                     type="submit"
-                    className="rounded-full border border-slate-600 px-4 py-2 text-xs text-slate-200 transition hover:border-sky-400 hover:text-white"
+                    className="ui-secondary-btn min-h-0 px-4 py-2 text-xs"
                   >
                     更新
                   </button>
@@ -229,7 +229,7 @@ export default async function StaffCategoriesPage() {
               <form action={deleteCategory.bind(null, category.id)} className="flex justify-end">
                 <button
                   type="submit"
-                  className="rounded-full border border-rose-400/40 px-4 py-2 text-xs text-rose-200 transition hover:border-rose-300 hover:text-rose-100"
+                  className="ui-danger-btn min-h-0 px-4 py-2 text-xs"
                 >
                   削除
                 </button>

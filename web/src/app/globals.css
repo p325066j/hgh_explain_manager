@@ -1,10 +1,20 @@
 
 @import "tailwindcss";
 
-
 :root {
-  --background: #020617;
-  --foreground: #e2e8f0;
+  --background: #dfdfdf;
+  --foreground: #191919;
+  --surface: #121212;
+  --surface-soft:rgb(1, 2, 5);
+  --surface-patient-card: #919191;
+  --surface-border: #1f2937;
+  --text-on-surface: #e2e8f0;
+  --text-on-surface-muted: #94a3b8;
+  --primary: #249191;
+  --primary-hover:#126666;
+  --danger: #ef4444;
+  --danger-soft: rgba(249, 115, 115, 0.1);
+  --upload-form-background: #ed7122;
 }
 
 @theme inline {
@@ -14,15 +24,128 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
-  }
+body {
+  background: radial-gradient(circle at top right, #ececec, var(--background) 45%);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+@layer components {
+  .ui-card {
+    @apply rounded-3xl border p-6;
+    border-color: var(--surface-border);
+    background-color: color-mix(in oklab, var(--surface) 88%, transparent);
+    color: var(--text-on-surface);
+  }
+
+  .ui-card-form{
+    @apply rounded-3xl border p-6;
+    border-color: #ffffff;
+    background-color: color-mix(in oklab, var(--primary-hover) 100%, transparent);
+    color: var(--text-on-surface);
+  }
+
+  .ui-card-upload-form {
+    @apply rounded-3xl border p-6;
+    border-color: #ffffff;
+    background-color: color-mix(in oklab, var(--upload-form-background) 100%, transparent);
+    color: var(--text-on-surface);
+  }
+
+  .ui-card-patient {
+    @apply rounded-3xl border p-6;
+    border-color: var(--surface-border);
+    background-color: color-mix(in oklab, var(--surface) 88%, transparent);
+    color: var(--text-on-surface);
+  }
+
+  .ui-subcard {
+    @apply rounded-2xl border p-4;
+    border-color: var(--surface-border);
+    background-color: color-mix(in oklab, var(--surface-soft) 84%, transparent);
+    color: var(--text-on-surface);
+  }
+
+  .ui-subcard-form {
+    @apply rounded-2xl border p-4;
+    border-color:#ffffff;
+    background-color: color-mix(in oklab, var(--surface-soft) 40%, transparent);
+    color: var(--text-on-surface);
+  }
+
+
+  .ui-title {
+    @apply text-xl font-semibold text-white;
+  }
+
+  .ui-muted {
+    color: var(--text-on-surface-muted);
+  }
+
+  .ui-input {
+    @apply min-h-[44px] w-full rounded-xl border bg-slate-950 px-3 py-2 text-base text-white placeholder:text-slate-400 focus:outline-none focus:ring-2;
+    border-color: color-mix(in oklab, var(--surface-border) 90%, white);
+    --tw-ring-color: color-mix(in oklab, var(--primary) 60%, white);
+  }
+
+  .ui-input-white {
+    @apply min-h-[44px] w-full rounded-xl border bg-slate-200 px-3 py-2 text-base text-black placeholder:text-slate-400 focus:outline-none focus:ring-2;
+    border-color: color-mix(in oklab, var(--surface-border) 90%, white);
+    --tw-ring-color: color-mix(in oklab, var(--primary) 60%, white);
+  }
+
+  .ui-input-orange {
+    @apply min-h-[44px] w-full rounded-xl border bg-slate-200 px-3 py-2 text-base text-black placeholder:text-slate-400 focus:outline-none focus:ring-2;
+    border-color: color-mix(in oklab, var(--surface-border) 90%, white);
+    --tw-ring-color: color-mix(in oklab, var(--primary) 60%, white);
+  }
+
+  .ui-input-patient {
+    @apply min-h-[44px] w-full rounded-xl border bg-slate-950 px-3 py-2 text-base text-white placeholder:text-slate-400 focus:outline-none focus:ring-2;
+    border-color: color-mix(in oklab, var(--surface-border) 90%, white);
+    --tw-ring-color: color-mix(in oklab, var(--primary) 60%, white);
+  }
+
+  .ui-primary-btn {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-full px-6 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60;
+    background-color: var(--primary);
+  }
+
+  .ui-primary-btn-orange {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-full px-6 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60;
+    background-color: #7122ed;
+  }
+
+  .ui-primary-btn:hover {
+    background-color: var(--primary-hover);
+  }
+
+  .ui-secondary-btn {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-full border px-5 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+    border-color: color-mix(in oklab, var(--text-on-surface) 45%, transparent);
+    color: var(--text-on-surface);
+  }
+
+  .ui-secondary-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .ui-danger-btn {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-full border px-5 py-2 text-sm font-semibold transition;
+    border-color: color-mix(in oklab, var(--danger) 72%, white);
+    color: color-mix(in oklab, var(--danger) 68%, white);
+  }
+
+  .ui-danger-btn:hover {
+    background-color: var(--danger-soft);
+  }
+
+  .ui-link {
+    color: var(--primary);
+    @apply underline underline-offset-4;
+  }
+
+  .ui-link:hover {
+    color: var(--primary-hover);
+  }
 }

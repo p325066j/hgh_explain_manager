@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logAudit } from "@/lib/audit";
+import { requireStaffApiRateLimit } from "@/lib/staff-api-rate-limit";
 import { prisma } from "@/lib/db";
+import { requireStaffApiAuth } from "@/lib/staff-auth";
 import { categoryCreateSchema } from "@/lib/validators";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const unauthorized = await requireStaffApiAuth(req);
+  if (unauthorized) return unauthorized;
+  const rateLimited = await requireStaffApiRateLimit(req, { maxRequests: 120, windowMs: 60 * 1000 });
+  if (rateLimited) return rateLimited;
+
   const categories = await prisma.category.findMany({
     orderBy: { order: "asc" },
   });
@@ -11,6 +18,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const unauthorized = await requireStaffApiAuth(req);
+  if (unauthorized) return unauthorized;
+  const rateLimited = await requireStaffApiRateLimit(req, { maxRequests: 30, windowMs: 60 * 1000 });
+  if (rateLimited) return rateLimited;
+
   const json = await req.json().catch(() => ({}));
   const parsed = categoryCreateSchema.safeParse(json);
   if (!parsed.success) {

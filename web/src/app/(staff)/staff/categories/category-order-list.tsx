@@ -70,7 +70,7 @@ export default function CategoryOrderList({ categories, onSave }: Props) {
           >
             <div className="flex items-center gap-3">
               <span className="rounded-md border border-slate-700/80 px-2 py-1 text-xs text-slate-300">
-                Drag
+                ドラッグ
               </span>
               <div>
                 <p className="font-semibold text-white">{item.name}</p>
@@ -91,7 +91,7 @@ export default function CategoryOrderList({ categories, onSave }: Props) {
           type="button"
           onClick={handleSave}
           disabled={!hasChanges || isPending}
-          className="rounded-full border border-sky-500/40 bg-sky-500/10 px-4 py-2 text-xs font-semibold text-sky-200 transition enabled:hover:border-sky-400 enabled:hover:text-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+          className="ui-primary-btn px-4 py-2 text-xs"
         >
           並び順を保存
         </button>

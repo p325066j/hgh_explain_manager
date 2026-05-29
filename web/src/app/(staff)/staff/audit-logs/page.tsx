@@ -58,14 +58,14 @@ export default async function StaffAuditLogsPage({ searchParams }: Props) {
 
   return (
     <div className="grid gap-6">
-      <section className="rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6">
-        <h1 className="text-xl font-semibold text-white">監査ログ</h1>
+      <section className="ui-card">
+        <h1 className="ui-title">監査ログ</h1>
         <p className="mt-2 text-sm text-slate-300">
           スタッフが行った操作の記録を確認します。API 経由の操作も同じログに記録されます。
         </p>
       </section>
 
-      <section className="rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6">
+      <section className="ui-card">
         <h2 className="text-sm font-semibold text-slate-200">記録対象</h2>
         <ul className="mt-3 grid gap-2 text-sm text-slate-300">
           <li>動画: 登録・公開状態変更・API 登録</li>
@@ -74,7 +74,7 @@ export default async function StaffAuditLogsPage({ searchParams }: Props) {
         </ul>
       </section>
 
-      <section className="rounded-3xl border border-slate-800/70 bg-slate-900/70 p-6">
+      <section className="ui-card">
         <h2 className="text-sm font-semibold text-slate-200">絞り込み</h2>
         <form className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_1.2fr_0.7fr_auto]">
           <label className="grid gap-1 text-xs text-slate-300">
@@ -82,7 +82,7 @@ export default async function StaffAuditLogsPage({ searchParams }: Props) {
             <select
               name="entityType"
               defaultValue={entityType ?? ""}
-              className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+              className="ui-input text-sm"
             >
               {entityOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -96,7 +96,7 @@ export default async function StaffAuditLogsPage({ searchParams }: Props) {
             <select
               name="action"
               defaultValue={action ?? ""}
-              className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+              className="ui-input text-sm"
             >
               {actionOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -111,7 +111,7 @@ export default async function StaffAuditLogsPage({ searchParams }: Props) {
               name="entityId"
               defaultValue={entityId}
               placeholder="例: youtubeId / categoryId"
-              className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+              className="ui-input text-sm"
             />
           </label>
           <label className="grid gap-1 text-xs text-slate-300">
@@ -122,13 +122,13 @@ export default async function StaffAuditLogsPage({ searchParams }: Props) {
               min={10}
               max={200}
               defaultValue={limit}
-              className="rounded-xl border border-slate-700/80 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-400 focus:outline-none"
+              className="ui-input text-sm"
             />
           </label>
           <div className="flex items-end">
             <button
               type="submit"
-              className="rounded-full border border-sky-500/40 bg-sky-500/10 px-5 py-2 text-sm font-semibold text-sky-200 transition hover:border-sky-400 hover:text-sky-100"
+              className="ui-primary-btn"
             >
               反映
             </button>
@@ -138,7 +138,7 @@ export default async function StaffAuditLogsPage({ searchParams }: Props) {
 
       <section className="overflow-hidden rounded-3xl border border-slate-800/80">
         <table className="w-full table-auto text-left text-sm text-slate-200">
-          <thead className="bg-slate-900/80 text-xs uppercase tracking-wide text-slate-400">
+          <thead className="bg-[#249191] text-xs uppercase tracking-wide text-slate-100">
             <tr>
               <th className="px-5 py-3">日時</th>
               <th className="px-5 py-3">対象</th>
@@ -157,7 +157,7 @@ export default async function StaffAuditLogsPage({ searchParams }: Props) {
               </tr>
             ) : (
               logs.map((log) => (
-                <tr key={log.id} className="align-top hover:bg-slate-900/60">
+                <tr key={log.id} className="align-top hover:bg-gray-600">
                   <td className="px-5 py-4 text-xs text-slate-300">
                     {log.createdAt.toLocaleString("ja-JP", {
                       dateStyle: "medium",

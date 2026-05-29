@@ -108,10 +108,10 @@ export default async function StaffVideoNewPage() {
   const categories = await prisma.category.findMany({ orderBy: { order: "asc" } });
 
   return (
-    <div className="grid gap-8 rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6">
+    <div className="ui-card-form grid gap-8">
       <header className="space-y-2">
-        <h1 className="text-xl font-semibold text-white">動画の手動登録</h1>
-        <p className="text-sm text-slate-300">
+        <h1 className="ui-title">動画の手動登録</h1>
+        <p className="text-sm text-white">
           YouTube のURLとメタ情報を入力して、動画を登録します。
         </p>
       </header>

@@ -24,6 +24,14 @@ const getAccessTokenFromRefreshToken = async () => {
 
   if (!response.ok) {
     const text = await response.text();
+    // invalid_grant はトークン失効を示すため、再認証が必要だと明示する。
+    // （同意画面がテスト公開だとリフレッシュトークンは 7 日で失効する）
+    if (text.includes("invalid_grant")) {
+      throw new Error(
+        "YouTube のリフレッシュトークンが失効しています。OAuth で再認証し、`YOUTUBE_REFRESH_TOKEN` を再設定してください。" +
+          "（同意画面が『テスト』公開のままだとトークンは 7 日で失効します）",
+      );
+    }
     throw new Error(`アクセストークンの更新に失敗しました: ${text}`);
   }
 
