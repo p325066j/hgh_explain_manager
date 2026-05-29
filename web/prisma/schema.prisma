@@ -116,3 +116,11 @@ model StaffApiRateLimit {
   @@index([blockedUntil])
   @@index([updatedAt])
 }
+
+/// YouTube OAuth リフレッシュトークン（AES-256-GCM で暗号化して保存）
+model YouTubeCredential {
+  id                    String   @id @default("default")
+  refreshTokenEncrypted String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}

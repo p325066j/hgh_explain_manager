@@ -1,13 +1,8 @@
 import { Prisma } from "@prisma/client";
+import { getYouTubeOAuthCredentials } from "@/lib/youtube-credentials";
 
-const getAccessTokenFromRefreshToken = async () => {
-  const refreshToken = process.env.YOUTUBE_REFRESH_TOKEN;
-  const clientId = process.env.YOUTUBE_CLIENT_ID;
-  const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
-
-  if (!refreshToken || !clientId || !clientSecret) {
-    return null;
-  }
+const refreshYouTubeAccessToken = async () => {
+  const { clientId, clientSecret, refreshToken } = await getYouTubeOAuthCredentials();
 
   const body = new URLSearchParams({
     client_id: clientId,
@@ -24,11 +19,9 @@ const getAccessTokenFromRefreshToken = async () => {
 
   if (!response.ok) {
     const text = await response.text();
-    // invalid_grant はトークン失効を示すため、再認証が必要だと明示する。
-    // （同意画面がテスト公開だとリフレッシュトークンは 7 日で失効する）
     if (text.includes("invalid_grant")) {
       throw new Error(
-        "YouTube のリフレッシュトークンが失効しています。OAuth で再認証し、`YOUTUBE_REFRESH_TOKEN` を再設定してください。" +
+        "YouTube のリフレッシュトークンが失効しています。スタッフ設定 > YouTube 連携から再設定するか、docs/architecture/youtube-api-guide.md の手順に従って再認証してください。" +
           "（同意画面が『テスト』公開のままだとトークンは 7 日で失効します）",
       );
     }
@@ -40,10 +33,12 @@ const getAccessTokenFromRefreshToken = async () => {
 };
 
 export const getYouTubeAccessToken = async () => {
-  const refreshed = await getAccessTokenFromRefreshToken();
-  if (refreshed) return refreshed;
+  const refreshed = await refreshYouTubeAccessToken();
+  if (refreshed) {
+    return refreshed;
+  }
 
-  const accessToken = process.env.YOUTUBE_ACCESS_TOKEN;
+  const accessToken = process.env.YOUTUBE_ACCESS_TOKEN?.trim();
   if (!accessToken) {
     throw new Error("YouTube 連携が未設定です。設定完了後に再度お試しください。");
   }

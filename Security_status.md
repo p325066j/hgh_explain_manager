@@ -9,6 +9,7 @@
 
 ## 実装とリポジトリの位置づけ
 - SEC-001〜003 のコード・マイグレーション・単体テストは **ローカル作業ツリーに存在**するが、**2026-05-29 時点では未コミット**（`main` の最新コミットは `01b1bae` UI編集前）。
+- YouTube 連携の運用手順書（`docs/architecture/youtube-api-guide.md`）と `youtube.ts` のエラー改善も未コミット。
 - 本番・ステージングへ反映する前に: ブランチ作成 → PR → `prisma migrate deploy` → 環境変数更新（`.env.example` 参照）が必要。
 
 ---
@@ -28,7 +29,7 @@
 | SEC-001 | Critical | 完了（未コミット） | API の認証・認可不足 | `/api/*` をスタッフ認証必須にし、未認証は `401` で拒否 |
 | SEC-002 | Critical | 完了（未コミット） | スタッフ認証方式が脆弱 | 固定フラグ Cookie を廃止し、HMAC 署名付き・有効期限付きセッション Cookie へ移行 |
 | SEC-003 | High | 完了（未コミット） | ログイン試行制限・レート制限なし | ログイン 5 回/15 分ブロック、スタッフ API の IP+メソッド+パス単位レート制限 |
-| SEC-004 | High | 未着手 | YouTube 秘密情報管理が未完成 | OAuth トークンやクライアント秘密情報を環境変数に直接保持している |
+| SEC-004 | High | 完了（未コミット） | YouTube 秘密情報管理 | リフレッシュトークンを DB 暗号化保存。クライアント秘密情報は Vercel 環境変数。運用手順書整備済み |
 | SEC-005 | High | 未着手 | アップロード処理の DoS 耐性不足 | 大きなファイルを server action で受け、メモリに一括展開している |
 | SEC-006 | Medium | 未着手 | セキュリティヘッダ未整備 | CSP、HSTS、Referrer-Policy、クリックジャッキング対策がない |
 | SEC-007 | Medium | 未着手 | 監査ログの追跡性不足 | 誰が・どの経路で操作したかを十分に残せていない |
@@ -38,6 +39,36 @@
 ---
 
 ## 対応履歴
+
+### 2026-05-29: SEC-004 YouTube 秘密情報管理（暗号化 DB 保存）
+- 状態: 完了（作業ツリー、未コミット）。本番 Vercel への環境変数反映は未実施。
+- 対応内容:
+  - `YouTubeCredential` モデルを追加し、リフレッシュトークンを AES-256-GCM で暗号化して Postgres に保存。
+  - `YOUTUBE_TOKEN_ENCRYPTION_KEY`（32文字以上）で復号。平文の env 直置きは移行用フォールバックのみ。
+  - `web/src/lib/youtube-credentials.ts` に認証情報取得を集約。
+  - スタッフ画面 `/staff/settings/youtube` からトークンを暗号化保存可能に。
+  - CLI `pnpm youtube:import-token` で env から DB へインポート可能に。
+  - `docs/architecture/youtube-api-guide.md` に本番（Vercel）手順を追記。
+- 保管方針:
+  - クライアント ID / シークレット: ホスティングの暗号化環境変数（Vercel 等）
+  - リフレッシュトークン: DB 暗号化（Google Secret Manager は GCP 常時ホスト時の将来オプション）
+- 検証結果:
+  - `prisma migrate deploy`: OK（`20260529100000_add_youtube_credential`）
+  - `pnpm lint` / `pnpm typecheck` / `pnpm test:unit`: OK
+
+### 2026-05-29: SEC-004 YouTube 連携（トークン失効・運用復旧）
+- 状態: 完了（上記暗号化保存実装に統合）。
+- 事象:
+  - `invalid_grant` によりリフレッシュトークン更新が失敗し、アップロード不可。
+- 対応内容:
+  - Google Cloud で OAuth 同意画面を **本番環境（In production）** に変更（7 日失効を防止）。
+  - OAuth 2.0 Playground で `YOUTUBE_REFRESH_TOKEN` を再取得し、`.env.local` を更新。
+  - 運用手順を `docs/architecture/youtube-api-guide.md` に文書化。
+  - `web/src/lib/youtube.ts` で `invalid_grant` 時に再認証手順を示すエラーメッセージを追加。
+  - `web/.env.example` に手順書への参照コメントを追加。
+- 検証結果（開発環境・手動）:
+  - スタッフ画面からの YouTube 動画アップロード: OK
+  - 患者画面での動画再生: OK
 
 ### 2026-04-23: SEC-003 ログイン試行制限・レート制限なし
 - 状態: 実装完了（作業ツリー、未コミット）。
@@ -91,15 +122,14 @@
 
 ## 未対応課題詳細
 
-### SEC-004 YouTube 秘密情報管理が未完成
-- 状態: 未着手。
-- 問題:
-  - OAuth トークン / client secret を環境変数へ直接依存。
-  - 設計上の「暗号化保存」「外部キー管理」が未実装。
-- 想定対応:
-  - Secret Manager 前提の構成へ寄せる。
-  - リフレッシュトークン保存方式の再設計。
-  - 秘密情報のローテーション手順を整備。
+### SEC-004 YouTube 秘密情報管理
+- 状態: **完了**（コード・手順。本番反映はデプロイ時）。
+- 実装:
+  - リフレッシュトークン: Postgres + AES-256-GCM（`web/src/lib/crypto-secrets.ts`）
+  - クライアント ID / シークレット: 環境変数（Vercel の暗号化 env を Secret Manager 相当として利用）
+- 残運用タスク:
+  - 本番 Vercel に `YOUTUBE_TOKEN_ENCRYPTION_KEY` 等を設定し、スタッフ画面または CLI でトークン保存。
+  - 本番 `.env` から `YOUTUBE_REFRESH_TOKEN` 平文を削除。
 
 ### SEC-005 アップロード処理の DoS 耐性不足
 - 状態: 未着手。
@@ -149,8 +179,8 @@
 ---
 
 ## 優先対応順
-1. **作業ツリーのコミット・PR・マイグレーション適用**（SEC-001〜003 をリモートへ反映）
-2. SEC-004 YouTube 秘密情報管理が未完成
+1. **作業ツリーのコミット・PR・マイグレーション適用**（SEC-001〜003、YouTube 手順書・`youtube.ts`）
+2. SEC-004 本番環境への認証情報反映（Vercel env + DB トークン保存）
 3. SEC-005 アップロード処理の DoS 耐性不足
 4. SEC-006 セキュリティヘッダ未整備
 5. SEC-007 監査ログの追跡性不足
@@ -160,15 +190,15 @@
 ---
 
 ## 進捗サマリー
-- 実装完了（未コミット）: 3 / 9（SEC-001〜003）
-- 未着手: 6 / 9（SEC-004〜009）
+- 実装完了（未コミット）: 4 / 9（SEC-001〜004）
+- 未着手: 5 / 9（SEC-005〜009）
 - リモート `main` に反映済みのセキュリティ強化: 0 / 9
 
 ---
 
 ## 次アクション
-1. `feat/security-staff-auth` 等で SEC-001〜003 をコミットし PR を作成する。
-2. マージ後、各環境で `prisma migrate deploy` と `STAFF_LOGIN_PASSWORD` / `STAFF_SESSION_SECRET` の設定を行う。
+1. `feat/security-staff-auth` 等で SEC-001〜003 と YouTube 関連変更をコミットし PR を作成する。
+2. マージ後、各環境で `prisma migrate deploy` とスタッフ / YouTube 環境変数を設定する。
 3. `pnpm test:e2e` で認証・レート制限まわりの回帰を確認する。
-4. SEC-004 として YouTube 秘密情報の保管方式を見直す。
-5. SEC-004 完了後、SEC-005 のアップロード経路強化に進む。
+4. SEC-004 を本番 Vercel / Neon に反映する。
+5. SEC-005 のアップロード経路強化に進む。

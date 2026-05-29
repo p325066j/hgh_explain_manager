@@ -14,7 +14,8 @@
     "prisma:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "setup:db": "node ./scripts/setup-db.mjs",
-    "db:seed": "tsx ./scripts/seed-db.ts"
+    "db:seed": "tsx ./scripts/seed-db.ts",
+    "youtube:import-token": "dotenv -e .env.local -- tsx ./scripts/youtube-import-refresh-token.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.17.0",
