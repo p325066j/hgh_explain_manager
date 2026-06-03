@@ -8,11 +8,12 @@
 ---
 
 ## 実装とリポジトリの位置づけ
-- **ブランチ**: `main`（`origin/main` と同期、作業ツリーはクリーン）
+- **ブランチ**: `main`（`origin/main` より 1 コミット先行、作業ツリーはクリーン）
 - **直近コミット**:
+  - `d8dbb1c` — SEC-005（動画アップロード DoS 耐性）
   - `26c217f` — SEC-004（YouTube 暗号化 DB 保存、手順書、設定 UI、CLI）
   - `12440e3` — SEC-001〜003、UI ガイドライン、スタッフ認証・レート制限
-- **SEC-001〜004**: 実装は `main` に反映済み
+- **SEC-001〜005**: 実装はローカル `main` に反映済み（SEC-005 は push 前）
 - **本番・ステージングへ残る作業**: `prisma migrate deploy`、環境変数設定（`.env.example` / [youtube-api-guide.md](./docs/architecture/youtube-api-guide.md) 参照）、YouTube トークンの DB 保存
 
 ---
@@ -44,7 +45,7 @@
 ## 対応履歴
 
 ### 2026-05-29: SEC-005 アップロード処理の DoS 耐性不足
-- 状態: **完了**（作業ツリー、未コミット。手動確認済み）。
+- 状態: **完了**（`main` 反映済み: `d8dbb1c`。手動確認済み）。
 - 対応内容:
   - `web/src/lib/video-upload-limits.ts` で上限（デフォルト 500MB・要件定義準拠）、拡張子/MIME/先頭バイト検証を集約。
   - Server Action（`upload/page.tsx`）と `uploadYouTubeVideo` の二重検証。
@@ -176,14 +177,15 @@
 ---
 
 ## 進捗サマリー
-- **完了**: 5 / 9（SEC-001〜005。SEC-005 は作業ツリー、SEC-001〜004 は `main` 反映済み）
+- **完了（ローカル `main`）**: 5 / 9（SEC-001〜005）
+- **リモート `origin/main`**: SEC-001〜004 まで（SEC-005 は push 待ち）
 - **未着手**: 4 / 9（SEC-006〜009）
 - **次のセキュリティ実装**: SEC-006
 
 ---
 
 ## 次アクション
-1. SEC-005 の変更をコミットする。
+1. `git push` で SEC-005 を `origin/main` に反映する。
 2. 本番・ステージングで `prisma migrate deploy` と環境変数を設定する（[youtube-api-guide.md](./docs/architecture/youtube-api-guide.md)）。
 3. `pnpm test:e2e` を実行し、認証・レート制限・アップロードまわりの回帰を確認する。
 4. SEC-006 セキュリティヘッダ整備に着手する。

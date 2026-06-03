@@ -14,11 +14,9 @@
 
 ## リポジトリ状態（2026-05-29 時点）
 - **ブランチ**: `main`（`origin/main` と同期）
-- **直近コミット（反映済み）**: `26c217f` SEC-004 / `12440e3` SEC-001〜003・UI
-- **未コミット変更あり**（作業ツリー）:
-  - SEC-005（動画アップロード DoS 耐性: `video-upload-limits.ts` 等）
-  - `Security_status.md` の更新
-- **推奨**: SEC-005 を `feat/sec-005-upload-limits` 等でコミット → PR
+- **直近コミット**: `d8dbb1c` SEC-005 / `26c217f` SEC-004 / `12440e3` SEC-001〜003・UI
+- **作業ツリー**: クリーン
+- **`origin/main`**: 1 コミット先行（SEC-005）。push または PR で反映
 
 ---
 
@@ -36,7 +34,7 @@
 - SEC-004（YouTube 秘密情報の DB 暗号化保存・運用手順書）
 - UI ガイドライン適用
 
-### 作業ツリー（未コミット・手動確認済み）
+### ローカル `main`（`d8dbb1c`・手動確認済み）
 - **SEC-005** アップロード DoS 耐性（2026-05-29）
   - 500MB 上限、形式検証、ストリーム送信、タイムアウト
   - 開発環境で手動確認完了
@@ -55,13 +53,13 @@
 ---
 
 ## 進行中
-- SEC-005 のコミット・PR 化
+- SEC-005 の push / PR
 - SEC-004 本番反映（Vercel 環境変数 + DB トークン保存）
 
 ---
 
 ## 未完了 / 残タスク
-- **コミット・PR**: SEC-005 をリモートへ反映
+- **push / PR**: SEC-005 を `origin/main` へ反映
 - SEC-004 本番反映（`YOUTUBE_TOKEN_ENCRYPTION_KEY`、DB トークン保存）
 - セキュリティ SEC-006〜009 — [Security_status.md](./Security_status.md)
 - PWA アイコン 1024px 差し替え
@@ -83,7 +81,7 @@
 ---
 
 ## 次にやること
-1. SEC-005 をコミットし PR 作成
+1. SEC-005 を push し PR 作成（必要な場合）
 2. `pnpm test:e2e` で回帰確認
 3. SEC-004 本番反映（Vercel / Neon）
 4. SEC-006 セキュリティヘッダ整備に着手
