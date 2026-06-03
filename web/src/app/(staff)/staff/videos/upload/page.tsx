@@ -3,6 +3,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { logAudit } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import {
+  formatMaxUploadSizeLabel,
+  getVideoUploadMaxBytes,
+  validateVideoUploadFile,
+} from "@/lib/video-upload-limits";
 import { uploadYouTubeVideo } from "@/lib/youtube";
 import { videoUploadSchema } from "@/lib/validators";
 import UploadForm from "./upload-form";
@@ -41,11 +46,21 @@ async function uploadVideo(formData: FormData): Promise<FormState> {
     };
   }
 
-  if (!(file instanceof File) || file.size === 0) {
+  if (!(file instanceof File)) {
     return {
       ok: false,
       message: "動画ファイルを選択してください。",
       fieldErrors: { file: ["動画ファイルを選択してください。"] },
+      values: raw,
+    };
+  }
+
+  const fileValidation = await validateVideoUploadFile(file);
+  if (!fileValidation.ok) {
+    return {
+      ok: false,
+      message: fileValidation.message,
+      fieldErrors: fileValidation.fieldErrors,
       values: raw,
     };
   }
@@ -55,6 +70,7 @@ async function uploadVideo(formData: FormData): Promise<FormState> {
   try {
     const uploadResult = await uploadYouTubeVideo({
       file,
+      contentType: fileValidation.contentType,
       title: data.title,
       description: data.description,
       youtubeCategoryId: data.youtubeCategoryId ?? undefined,
@@ -136,7 +152,12 @@ export default async function StaffVideoUploadPage() {
         </p>
       </header>
 
-      <UploadForm categories={categories} action={uploadVideo} />
+      <UploadForm
+        categories={categories}
+        action={uploadVideo}
+        maxUploadBytes={getVideoUploadMaxBytes()}
+        maxUploadSizeLabel={formatMaxUploadSizeLabel()}
+      />
     </div>
   );
 }

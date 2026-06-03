@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useActionState } from "react";
+import { ALLOWED_VIDEO_EXTENSIONS } from "@/lib/video-upload-limits";
 
 const DEFAULT_CATEGORY_ID = "27";
 
@@ -19,12 +20,27 @@ type FormState = {
 type Props = {
   categories: Category[];
   action: (formData: FormData) => Promise<FormState | void>;
+  maxUploadBytes: number;
+  maxUploadSizeLabel: string;
 };
 
 const getError = (errors: Record<string, string[]> | undefined, key: string) =>
   errors?.[key]?.[0];
 
-export default function UploadForm({ categories, action }: Props) {
+const ACCEPT_TYPES = ALLOWED_VIDEO_EXTENSIONS.map((ext) => {
+  if (ext === ".mov") return "video/quicktime";
+  if (ext === ".webm") return "video/webm";
+  if (ext === ".avi") return "video/x-msvideo";
+  if (ext === ".mpeg" || ext === ".mpg") return "video/mpeg";
+  return "video/mp4";
+}).join(",");
+
+export default function UploadForm({
+  categories,
+  action,
+  maxUploadBytes,
+  maxUploadSizeLabel,
+}: Props) {
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_, formData) => {
       const result = await action(formData);
@@ -46,10 +62,24 @@ export default function UploadForm({ categories, action }: Props) {
         <input
           name="file"
           type="file"
-          accept="video/*"
+          accept={`${ACCEPT_TYPES},${ALLOWED_VIDEO_EXTENSIONS.join(",")}`}
           className="ui-input-white text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-slate-100"
           required
+          onChange={(event) => {
+            const selected = event.target.files?.[0];
+            if (!selected) return;
+            if (selected.size > maxUploadBytes) {
+              event.target.setCustomValidity(
+                `ファイルサイズは ${maxUploadSizeLabel} 以下にしてください。`,
+              );
+              return;
+            }
+            event.target.setCustomValidity("");
+          }}
         />
+        <span className="text-xs text-slate-400">
+          対応形式: {ALLOWED_VIDEO_EXTENSIONS.join(" / ")}（上限 {maxUploadSizeLabel}）
+        </span>
         {getError(state.fieldErrors, "file") && (
           <span className="text-xs text-rose-200">{getError(state.fieldErrors, "file")}</span>
         )}

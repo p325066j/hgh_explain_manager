@@ -1,4 +1,8 @@
 import { Prisma } from "@prisma/client";
+import {
+  getVideoUploadTimeoutMs,
+  validateVideoUploadFile,
+} from "@/lib/video-upload-limits";
 import { getYouTubeOAuthCredentials } from "@/lib/youtube-credentials";
 
 const refreshYouTubeAccessToken = async () => {
@@ -47,6 +51,7 @@ export const getYouTubeAccessToken = async () => {
 
 type UploadInput = {
   file: File;
+  contentType: string;
   title: string;
   description: string;
   youtubeCategoryId?: string;
@@ -86,7 +91,14 @@ const buildMetadata = (input: UploadInput) => {
 };
 
 export const uploadYouTubeVideo = async (input: UploadInput) => {
+  const fileCheck = await validateVideoUploadFile(input.file);
+  if (!fileCheck.ok) {
+    throw new Error(fileCheck.message);
+  }
+
+  const contentType = input.contentType || fileCheck.contentType;
   const accessToken = await getYouTubeAccessToken();
+  const uploadTimeoutMs = getVideoUploadTimeoutMs();
 
   const metadataResponse = await fetch(
     "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
@@ -96,9 +108,10 @@ export const uploadYouTubeVideo = async (input: UploadInput) => {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json; charset=UTF-8",
         "X-Upload-Content-Length": input.file.size.toString(),
-        "X-Upload-Content-Type": input.file.type || "video/*",
+        "X-Upload-Content-Type": contentType,
       },
       body: JSON.stringify(buildMetadata(input)),
+      signal: AbortSignal.timeout(uploadTimeoutMs),
     },
   );
 
@@ -112,14 +125,27 @@ export const uploadYouTubeVideo = async (input: UploadInput) => {
     throw new Error("アップロード URL を取得できませんでした。");
   }
 
-  const videoResponse = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Length": input.file.size.toString(),
-      "Content-Type": input.file.type || "video/*",
-    },
-    body: Buffer.from(await input.file.arrayBuffer()),
-  });
+  let videoResponse: Response;
+  try {
+    videoResponse = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Length": input.file.size.toString(),
+        "Content-Type": contentType,
+      },
+      // 一括メモリ展開を避け、ReadableStream で YouTube へ送信する
+      body: input.file.stream(),
+      duplex: "half",
+      signal: AbortSignal.timeout(uploadTimeoutMs),
+    } as RequestInit);
+  } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      throw new Error(
+        `YouTube アップロードがタイムアウトしました（${Math.floor(uploadTimeoutMs / 60_000)} 分以内）。ファイルサイズを小さくするか、時間をおいて再試行してください。`,
+      );
+    }
+    throw error;
+  }
 
   if (!videoResponse.ok) {
     const text = await videoResponse.text();

@@ -8,9 +8,12 @@
 ---
 
 ## 実装とリポジトリの位置づけ
-- SEC-001〜003 のコード・マイグレーション・単体テストは **ローカル作業ツリーに存在**するが、**2026-05-29 時点では未コミット**（`main` の最新コミットは `01b1bae` UI編集前）。
-- YouTube 連携の運用手順書（`docs/architecture/youtube-api-guide.md`）と `youtube.ts` のエラー改善も未コミット。
-- 本番・ステージングへ反映する前に: ブランチ作成 → PR → `prisma migrate deploy` → 環境変数更新（`.env.example` 参照）が必要。
+- **ブランチ**: `main`（`origin/main` と同期、作業ツリーはクリーン）
+- **直近コミット**:
+  - `26c217f` — SEC-004（YouTube 暗号化 DB 保存、手順書、設定 UI、CLI）
+  - `12440e3` — SEC-001〜003、UI ガイドライン、スタッフ認証・レート制限
+- **SEC-001〜004**: 実装は `main` に反映済み
+- **本番・ステージングへ残る作業**: `prisma migrate deploy`、環境変数設定（`.env.example` / [youtube-api-guide.md](./docs/architecture/youtube-api-guide.md) 参照）、YouTube トークンの DB 保存
 
 ---
 
@@ -26,11 +29,11 @@
 
 | ID | 優先度 | 状態 | 課題 | 概要 |
 | --- | --- | --- | --- | --- |
-| SEC-001 | Critical | 完了（未コミット） | API の認証・認可不足 | `/api/*` をスタッフ認証必須にし、未認証は `401` で拒否 |
-| SEC-002 | Critical | 完了（未コミット） | スタッフ認証方式が脆弱 | 固定フラグ Cookie を廃止し、HMAC 署名付き・有効期限付きセッション Cookie へ移行 |
-| SEC-003 | High | 完了（未コミット） | ログイン試行制限・レート制限なし | ログイン 5 回/15 分ブロック、スタッフ API の IP+メソッド+パス単位レート制限 |
-| SEC-004 | High | 完了（未コミット） | YouTube 秘密情報管理 | リフレッシュトークンを DB 暗号化保存。クライアント秘密情報は Vercel 環境変数。運用手順書整備済み |
-| SEC-005 | High | 未着手 | アップロード処理の DoS 耐性不足 | 大きなファイルを server action で受け、メモリに一括展開している |
+| SEC-001 | Critical | 完了 | API の認証・認可不足 | `/api/*` をスタッフ認証必須にし、未認証は `401` で拒否 |
+| SEC-002 | Critical | 完了 | スタッフ認証方式が脆弱 | 固定フラグ Cookie を廃止し、HMAC 署名付き・有効期限付きセッション Cookie へ移行 |
+| SEC-003 | High | 完了 | ログイン試行制限・レート制限なし | ログイン 5 回/15 分ブロック、スタッフ API の IP+メソッド+パス単位レート制限 |
+| SEC-004 | High | 完了 | YouTube 秘密情報管理 | リフレッシュトークンを DB 暗号化保存。クライアント秘密情報は Vercel 環境変数。運用手順書整備済み |
+| SEC-005 | High | 完了 | アップロード処理の DoS 耐性不足 | サイズ/MIME/拡張子/マジックバイト検証、ストリーム送信、タイムアウト、bodySizeLimit 調整 |
 | SEC-006 | Medium | 未着手 | セキュリティヘッダ未整備 | CSP、HSTS、Referrer-Policy、クリックジャッキング対策がない |
 | SEC-007 | Medium | 未着手 | 監査ログの追跡性不足 | 誰が・どの経路で操作したかを十分に残せていない |
 | SEC-008 | Medium | 未着手 | 内部 API 用の認証設計が未実装 | Scheduler / バッチ用の内部 API 認証が仕様止まり |
@@ -40,107 +43,91 @@
 
 ## 対応履歴
 
-### 2026-05-29: SEC-004 YouTube 秘密情報管理（暗号化 DB 保存）
-- 状態: 完了（作業ツリー、未コミット）。本番 Vercel への環境変数反映は未実施。
+### 2026-05-29: SEC-005 アップロード処理の DoS 耐性不足
+- 状態: **完了**（作業ツリー、未コミット。手動確認済み）。
+- 対応内容:
+  - `web/src/lib/video-upload-limits.ts` で上限（デフォルト 500MB・要件定義準拠）、拡張子/MIME/先頭バイト検証を集約。
+  - Server Action（`upload/page.tsx`）と `uploadYouTubeVideo` の二重検証。
+  - YouTube への PUT を `arrayBuffer()` 一括読み込みから `file.stream()` ストリーミングへ変更。
+  - アップロード全体に `AbortSignal.timeout`（デフォルト 15 分、`VIDEO_UPLOAD_TIMEOUT_MS` で変更可）。
+  - `next.config.ts` の `bodySizeLimit` を 200mb から上限+余裕（約 520mb）へ調整。
+  - クライアントフォームに形式・上限の表示とサイズの事前チェックを追加。
+- 主な変更ファイル:
+  - `web/src/lib/video-upload-limits.ts`
+  - `web/src/lib/youtube.ts`
+  - `web/src/app/(staff)/staff/videos/upload/page.tsx`
+  - `web/src/app/(staff)/staff/videos/upload/upload-form.tsx`
+  - `web/next.config.ts`
+- 検証結果:
+  - `pnpm lint` / `pnpm typecheck` / `pnpm test:unit`: OK（`video-upload-limits.spec.ts` 含む）
+  - 手動（開発環境）: 通常 MP4 アップロード OK、上限超過・非対応形式の拒否 OK
+
+### 2026-05-29: SEC-004 YouTube 秘密情報管理（完了）
+- 状態: **完了**（`main` 反映済み: `26c217f`）。開発環境でアップロード・患者再生を手動確認済み。
 - 対応内容:
   - `YouTubeCredential` モデルを追加し、リフレッシュトークンを AES-256-GCM で暗号化して Postgres に保存。
   - `YOUTUBE_TOKEN_ENCRYPTION_KEY`（32文字以上）で復号。平文の env 直置きは移行用フォールバックのみ。
   - `web/src/lib/youtube-credentials.ts` に認証情報取得を集約。
   - スタッフ画面 `/staff/settings/youtube` からトークンを暗号化保存可能に。
   - CLI `pnpm youtube:import-token` で env から DB へインポート可能に。
-  - `docs/architecture/youtube-api-guide.md` に本番（Vercel）手順を追記。
+  - `docs/architecture/youtube-api-guide.md` に開発・本番（Vercel）手順を整備。
+  - `web/src/lib/youtube.ts` で `invalid_grant` 時に再認証手順を示すエラーメッセージを追加。
 - 保管方針:
   - クライアント ID / シークレット: ホスティングの暗号化環境変数（Vercel 等）
   - リフレッシュトークン: DB 暗号化（Google Secret Manager は GCP 常時ホスト時の将来オプション）
 - 検証結果:
   - `prisma migrate deploy`: OK（`20260529100000_add_youtube_credential`）
   - `pnpm lint` / `pnpm typecheck` / `pnpm test:unit`: OK
+  - 手動: スタッフ画面からの YouTube アップロード OK、患者画面での動画再生 OK
+- 受入基準の達成:
+  - 平文リフレッシュトークンの恒常保管を DB 暗号化へ移行する設計を実装
+  - ローテーション手順を文書化
+  - 開発環境で E2E に近い手動確認を実施
 
-### 2026-05-29: SEC-004 YouTube 連携（トークン失効・運用復旧）
-- 状態: 完了（上記暗号化保存実装に統合）。
-- 事象:
-  - `invalid_grant` によりリフレッシュトークン更新が失敗し、アップロード不可。
-- 対応内容:
-  - Google Cloud で OAuth 同意画面を **本番環境（In production）** に変更（7 日失効を防止）。
-  - OAuth 2.0 Playground で `YOUTUBE_REFRESH_TOKEN` を再取得し、`.env.local` を更新。
-  - 運用手順を `docs/architecture/youtube-api-guide.md` に文書化。
-  - `web/src/lib/youtube.ts` で `invalid_grant` 時に再認証手順を示すエラーメッセージを追加。
-  - `web/.env.example` に手順書への参照コメントを追加。
-- 検証結果（開発環境・手動）:
-  - スタッフ画面からの YouTube 動画アップロード: OK
-  - 患者画面での動画再生: OK
+### 2026-05-29: SEC-004 付記（トークン失効・運用復旧）
+- OAuth 同意画面を **本番環境（In production）** に変更（テスト公開時の 7 日失効を防止）。
+- 失効時は Playground で再取得し、スタッフ設定画面または CLI で DB に再保存。
 
 ### 2026-04-23: SEC-003 ログイン試行制限・レート制限なし
-- 状態: 実装完了（作業ツリー、未コミット）。
+- 状態: **完了**（`main` 反映済み: `12440e3`）。
 - 対応内容:
   - スタッフ入力用の認証情報を `STAFF_LOGIN_PASSWORD` に変更し、セッション署名鍵 `STAFF_SESSION_SECRET` と役割を分離。
   - 旧 `STAFF_PASSCODE` は移行用フォールバックとして暫定対応。
-  - `STAFF_LOGIN_PASSWORD` は 10 文字以上を必須に変更。
-  - スタッフログイン画面の入力名・文言を `パスワード` に統一。
-  - `StaffLoginRateLimit` モデルとマイグレーション `20260423000000_add_staff_login_rate_limit` を追加。
-  - `x-forwarded-for` / `x-real-ip` ベースでログイン元を識別。
-  - 15 分間で 5 回失敗すると 15 分ブロックするログイン試行制限を実装。
-  - ログイン成功時に失敗回数をクリアするよう実装。
-  - `StaffApiRateLimit` モデルとマイグレーション `20260423010000_add_staff_api_rate_limit` を追加。
-  - スタッフ専用 API に対し、`IP + メソッド + パス` 単位のレート制限を追加。
-  - API ごとに上限値を分け、超過時は `429` と `Retry-After` を返すよう実装。
-  - パスワード周辺と API レート制限周辺のユニットテストを追加。
+  - `StaffLoginRateLimit` / `StaffApiRateLimit` モデルとマイグレーション 2 件を追加。
+  - ログイン 5 回/15 分ブロック、API レート制限（`429` + `Retry-After`）。
 - 主な変更ファイル:
   - `web/src/lib/staff-login-rate-limit.ts`
   - `web/src/lib/staff-api-rate-limit.ts`
   - `web/src/lib/staff-password.ts`
   - `web/src/middleware.ts`
-  - `web/src/app/(staff)/staff/login/page.tsx`
-- 検証結果（実装時）:
-  - `pnpm exec dotenv -e .env.local -- prisma migrate deploy`: OK
-  - `pnpm exec dotenv -e .env.local -- prisma generate`: OK
-  - `pnpm lint` / `pnpm typecheck` / `pnpm test:unit` / `pnpm test:e2e`: OK
-- 再確認（2026-05-29、未コミットツリー）:
-  - `pnpm lint` / `pnpm typecheck` / `pnpm test:unit`: OK
-  - `pnpm test:e2e`: 未再実行
+- 検証結果:
+  - `pnpm lint` / `pnpm typecheck` / `pnpm test:unit`: OK（2026-05-29 再確認）
+  - `pnpm test:e2e`: SEC-003 反映後は未再実行
 
 ### 2026-04-15: SEC-002 スタッフ認証方式が脆弱
-- 状態: 実装完了（作業ツリー、未コミット）。
-- 対応内容:
-  - `staff_auth=1` という固定フラグ Cookie を廃止。
-  - `STAFF_SESSION_SECRET` で HMAC-SHA256 署名したセッション Cookie を発行・検証する方式へ変更。
-  - セッション Cookie に 8 時間の有効期限を付与。
-  - Cookie に `httpOnly`、`sameSite=lax`、本番環境での `secure` を設定。
-  - ミドルウェアと API 認証ガードを非同期の署名検証へ移行。
-  - ログアウト時は共通定数の Cookie 名で削除するよう修正。
+- 状態: **完了**（`main` 反映済み: `12440e3`）。
 - 主な変更ファイル: `web/src/lib/staff-auth.ts`
 
 ### 2026-04-15: SEC-001 API の認証・認可不足
-- 状態: 実装完了（作業ツリー、未コミット）。
-- 対応内容:
-  - スタッフ認証判定を `web/src/lib/staff-auth.ts` に集約。
-  - `middleware.ts` の保護対象に `/api/:path*` を追加。
-  - 未認証の API アクセスはリダイレクトではなく `401 unauthorized` の JSON を返すように変更。
-  - `videos`、`categories`、`categories/[id]`、`audit-logs` の各 API ルート内にも認証ガードを追加。
+- 状態: **完了**（`main` 反映済み: `12440e3`）。
+- 主な変更ファイル: `web/src/lib/staff-auth.ts`, `web/src/middleware.ts`, 各 API ルート
+
+---
+
+## 完了課題の残運用タスク（SEC-004）
+
+実装は完了しているが、**デプロイ先ごと**に以下が必要です。
+
+| 環境 | 作業 |
+| --- | --- |
+| 開発 | `YOUTUBE_TOKEN_ENCRYPTION_KEY` を `.env.local` に設定し、`/staff/settings/youtube` または `pnpm youtube:import-token` でトークンを DB 保存 |
+| 本番 | Vercel に `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET` / `YOUTUBE_TOKEN_ENCRYPTION_KEY` を設定。Neon で `prisma migrate deploy` 後、本番 DB にトークン保存。**`YOUTUBE_REFRESH_TOKEN` は本番 env に置かない** |
+
+詳細: [docs/architecture/youtube-api-guide.md](./docs/architecture/youtube-api-guide.md)
 
 ---
 
 ## 未対応課題詳細
-
-### SEC-004 YouTube 秘密情報管理
-- 状態: **完了**（コード・手順。本番反映はデプロイ時）。
-- 実装:
-  - リフレッシュトークン: Postgres + AES-256-GCM（`web/src/lib/crypto-secrets.ts`）
-  - クライアント ID / シークレット: 環境変数（Vercel の暗号化 env を Secret Manager 相当として利用）
-- 残運用タスク:
-  - 本番 Vercel に `YOUTUBE_TOKEN_ENCRYPTION_KEY` 等を設定し、スタッフ画面または CLI でトークン保存。
-  - 本番 `.env` から `YOUTUBE_REFRESH_TOKEN` 平文を削除。
-
-### SEC-005 アップロード処理の DoS 耐性不足
-- 状態: 未着手。
-- 問題:
-  - `bodySizeLimit` が大きい。
-  - ファイル型・サイズ・拡張子の厳格チェックが弱い。
-  - 動画データをメモリへ一括ロードしている。
-- 想定対応:
-  - サイズ・MIME 制限の明確化。
-  - ストリーミングまたは安全なアップロード経路へ変更。
-  - タイムアウトや失敗時処理を追加。
 
 ### SEC-006 セキュリティヘッダ未整備
 - 状態: 未着手。
@@ -179,26 +166,24 @@
 ---
 
 ## 優先対応順
-1. **作業ツリーのコミット・PR・マイグレーション適用**（SEC-001〜003、YouTube 手順書・`youtube.ts`）
-2. SEC-004 本番環境への認証情報反映（Vercel env + DB トークン保存）
-3. SEC-005 アップロード処理の DoS 耐性不足
-4. SEC-006 セキュリティヘッダ未整備
-5. SEC-007 監査ログの追跡性不足
-6. SEC-008 内部 API 用の認証設計が未実装
-7. SEC-009 公開範囲の運用境界が曖昧
+1. 各環境で `prisma migrate deploy` とスタッフ / YouTube 環境変数の設定（SEC-004 残運用）
+2. `pnpm test:e2e` で SEC-001〜003 の回帰確認
+3. SEC-006 セキュリティヘッダ未整備
+4. SEC-007 監査ログの追跡性不足
+5. SEC-008 内部 API 用の認証設計が未実装
+6. SEC-009 公開範囲の運用境界が曖昧
 
 ---
 
 ## 進捗サマリー
-- 実装完了（未コミット）: 4 / 9（SEC-001〜004）
-- 未着手: 5 / 9（SEC-005〜009）
-- リモート `main` に反映済みのセキュリティ強化: 0 / 9
+- **完了**: 5 / 9（SEC-001〜005。SEC-005 は作業ツリー、SEC-001〜004 は `main` 反映済み）
+- **未着手**: 4 / 9（SEC-006〜009）
+- **次のセキュリティ実装**: SEC-006
 
 ---
 
 ## 次アクション
-1. `feat/security-staff-auth` 等で SEC-001〜003 と YouTube 関連変更をコミットし PR を作成する。
-2. マージ後、各環境で `prisma migrate deploy` とスタッフ / YouTube 環境変数を設定する。
-3. `pnpm test:e2e` で認証・レート制限まわりの回帰を確認する。
-4. SEC-004 を本番 Vercel / Neon に反映する。
-5. SEC-005 のアップロード経路強化に進む。
+1. SEC-005 の変更をコミットする。
+2. 本番・ステージングで `prisma migrate deploy` と環境変数を設定する（[youtube-api-guide.md](./docs/architecture/youtube-api-guide.md)）。
+3. `pnpm test:e2e` を実行し、認証・レート制限・アップロードまわりの回帰を確認する。
+4. SEC-006 セキュリティヘッダ整備に着手する。
